@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Plus, BookOpen, PenLine } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -49,7 +49,7 @@ export const ChapterList = () => {
       </div>
       
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>Create New Chapter</DialogTitle>
           </DialogHeader>
@@ -73,15 +73,7 @@ export const ChapterList = () => {
             className="p-6 hover:shadow-lg transition-shadow cursor-pointer"
             onClick={() => handleChapterClick(chapter.id)}
           >
-            <h2 className="text-xl font-bold mb-4">{chapter.name}</h2>
-            <div className="flex space-x-2">
-              <Button variant="outline" className="flex-1">
-                <BookOpen className="mr-2 h-4 w-4" /> Review
-              </Button>
-              <Button variant="outline" className="flex-1">
-                <PenLine className="mr-2 h-4 w-4" /> Test
-              </Button>
-            </div>
+            <h2 className="text-xl font-bold">{chapter.name}</h2>
           </Card>
         ))}
       </div>

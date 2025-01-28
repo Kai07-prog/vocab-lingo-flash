@@ -40,42 +40,56 @@ export const ChapterList = () => {
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-sakura-700">Japanese Vocabulary</h1>
-        <Button onClick={() => setIsDialogOpen(true)} className="bg-sakura-500 hover:bg-sakura-600">
-          <Plus className="mr-2 h-4 w-4" /> Add Chapter
-        </Button>
-      </div>
-      
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Create New Chapter</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Input
-              placeholder="Enter chapter name"
-              value={newChapterName}
-              onChange={(e) => setNewChapterName(e.target.value)}
-            />
-            <Button onClick={addChapter} className="w-full bg-sakura-500 hover:bg-sakura-600">
-              Create Chapter
-            </Button>
+    <div className="container mx-auto p-6 min-h-screen bg-gradient-to-b from-sakura-50 to-white">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex justify-between items-center mb-12">
+          <div>
+            <h1 className="text-4xl font-bold text-sakura-700 font-japanese mb-2">単語帳</h1>
+            <p className="text-zen-600">Vocabulary Notebook</p>
           </div>
-        </DialogContent>
-      </Dialog>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {chapters.map((chapter) => (
-          <Card 
-            key={chapter.id} 
-            className="p-6 hover:shadow-lg transition-shadow cursor-pointer"
-            onClick={() => handleChapterClick(chapter.id)}
+          <Button 
+            onClick={() => setIsDialogOpen(true)} 
+            className="bg-sakura-500 hover:bg-sakura-600 text-white shadow-lg transition-all hover:shadow-xl"
           >
-            <h2 className="text-xl font-bold">{chapter.name}</h2>
-          </Card>
-        ))}
+            <Plus className="mr-2 h-4 w-4" /> Add Chapter
+          </Button>
+        </div>
+        
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Create New Chapter</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <Input
+                placeholder="Enter chapter name"
+                value={newChapterName}
+                onChange={(e) => setNewChapterName(e.target.value)}
+              />
+              <Button onClick={addChapter} className="w-full bg-sakura-500 hover:bg-sakura-600">
+                Create Chapter
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {chapters.map((chapter) => (
+            <Card 
+              key={chapter.id} 
+              className="p-8 hover:shadow-lg transition-all cursor-pointer bg-white/80 backdrop-blur-sm border-sakura-100 hover:border-sakura-200"
+              onClick={() => handleChapterClick(chapter.id)}
+            >
+              <h2 className="text-2xl font-bold text-zen-800 font-japanese">{chapter.name}</h2>
+            </Card>
+          ))}
+        </div>
+        
+        {chapters.length === 0 && (
+          <div className="text-center py-16">
+            <p className="text-zen-500 text-lg">No chapters yet. Create your first chapter to get started!</p>
+          </div>
+        )}
       </div>
     </div>
   );

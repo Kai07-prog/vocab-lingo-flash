@@ -3,7 +3,6 @@ import { Card } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 
@@ -14,7 +13,6 @@ interface Chapter {
 
 export const ChapterList = () => {
   const [chapters, setChapters] = useState<Chapter[]>([]);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newChapterName, setNewChapterName] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -27,7 +25,6 @@ export const ChapterList = () => {
       };
       setChapters([...chapters, newChapter]);
       setNewChapterName("");
-      setIsDialogOpen(false);
       toast({
         title: "Chapter added",
         description: `${newChapter.name} has been created`,
@@ -42,36 +39,27 @@ export const ChapterList = () => {
   return (
     <div className="container mx-auto p-6 min-h-screen bg-gradient-to-b from-sakura-50 to-white">
       <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-12">
+        <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-4xl font-bold text-sakura-700 font-japanese mb-2">単語帳</h1>
             <p className="text-zen-600">Vocabulary Notebook</p>
           </div>
           <Button 
-            onClick={() => setIsDialogOpen(true)} 
+            onClick={addChapter} 
             className="bg-sakura-500 hover:bg-sakura-600 text-white shadow-lg transition-all hover:shadow-xl"
           >
             <Plus className="mr-2 h-4 w-4" /> Add Chapter
           </Button>
         </div>
         
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-sm">
-            <DialogHeader>
-              <DialogTitle>Create New Chapter</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <Input
-                placeholder="Enter chapter name"
-                value={newChapterName}
-                onChange={(e) => setNewChapterName(e.target.value)}
-              />
-              <Button onClick={addChapter} className="w-full bg-sakura-500 hover:bg-sakura-600">
-                Create Chapter
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <div className="mb-8">
+          <Input
+            placeholder="Enter chapter name"
+            value={newChapterName}
+            onChange={(e) => setNewChapterName(e.target.value)}
+            className="w-full"
+          />
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {chapters.map((chapter) => (

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trash2, Edit } from "lucide-react";
@@ -8,10 +8,34 @@ interface FlashcardProps {
   back: string;
   onDelete: () => void;
   onEdit: () => void;
+  writingSystem: "hiragana" | "katakana";
+  isKanji?: boolean;
 }
 
-export const Flashcard = ({ front, back, onDelete, onEdit }: FlashcardProps) => {
+export const Flashcard = ({ 
+  front, 
+  back, 
+  onDelete, 
+  onEdit, 
+  writingSystem,
+  isKanji = false 
+}: FlashcardProps) => {
   const [isFlipped, setIsFlipped] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsExiting(true);
+    setTimeout(() => {
+      onDelete();
+    }, 300);
+  };
+
+  const textClass = isKanji 
+    ? "japanese-text-kanji"
+    : writingSystem === "hiragana" 
+      ? "japanese-text-hiragana" 
+      : "japanese-text-katakana";
 
   return (
     <div className="relative">
@@ -29,26 +53,23 @@ export const Flashcard = ({ front, back, onDelete, onEdit }: FlashcardProps) => 
         <Button
           variant="ghost"
           size="icon"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete();
-          }}
+          onClick={handleDelete}
         >
           <Trash2 className="h-4 w-4" />
         </Button>
       </div>
       
       <div
-        className={`flip-card h-48 w-full ${isFlipped ? "flipped" : ""}`}
+        className={`flip-card h-48 w-full ${isFlipped ? "flipped" : ""} ${isExiting ? "exit" : ""}`}
         onClick={() => setIsFlipped(!isFlipped)}
       >
         <div className="flip-card-inner">
           <Card className="flip-card-front flex items-center justify-center p-6">
-            <span className="text-2xl font-japanese">{front}</span>
+            <span className={textClass}>{front}</span>
           </Card>
           
           <Card className="flip-card-back flex items-center justify-center p-6">
-            <span className="text-2xl font-japanese">{back}</span>
+            <span className="text-xl">{back}</span>
           </Card>
         </div>
       </div>

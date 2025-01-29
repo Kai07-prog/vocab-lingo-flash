@@ -88,6 +88,8 @@ const Chapter = () => {
             back={vocabulary.meaning}
             onDelete={() => handleDelete(vocabulary.id)}
             onEdit={() => handleEdit(vocabulary)}
+            writingSystem={vocabulary.writingSystem}
+            isKanji={vocabulary.writingSystem === "hiragana" && !!vocabulary.kanji}
           />
         ))}
       </div>

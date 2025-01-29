@@ -63,6 +63,7 @@ export const VocabularyForm = ({
       description: initialValues 
         ? "The vocabulary has been updated successfully" 
         : "New vocabulary has been added to the chapter",
+      duration: 2000, // 2 seconds
     });
   };
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,39 +13,65 @@ import { useToast } from "@/hooks/use-toast";
 interface VocabularyFormProps {
   chapterId: number;
   onAdd: (vocabulary: any) => void;
+  onCancel: () => void;
+  initialValues?: {
+    meaning: string;
+    reading: string;
+    kanji: string | null;
+    writingSystem: "hiragana" | "katakana";
+  };
 }
 
-export const VocabularyForm = ({ chapterId, onAdd }: VocabularyFormProps) => {
-  const [writingSystem, setWritingSystem] = useState<"hiragana" | "katakana">("hiragana");
+export const VocabularyForm = ({ 
+  chapterId, 
+  onAdd, 
+  onCancel,
+  initialValues 
+}: VocabularyFormProps) => {
+  const [writingSystem, setWritingSystem] = useState<"hiragana" | "katakana">(
+    initialValues?.writingSystem || "hiragana"
+  );
+  const [meaning, setMeaning] = useState(initialValues?.meaning || "");
+  const [reading, setReading] = useState(initialValues?.reading || "");
+  const [kanji, setKanji] = useState(initialValues?.kanji || "");
+  
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (initialValues) {
+      setWritingSystem(initialValues.writingSystem);
+      setMeaning(initialValues.meaning);
+      setReading(initialValues.reading);
+      setKanji(initialValues.kanji || "");
+    }
+  }, [initialValues]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const form = e.target as HTMLFormElement;
-    const formData = new FormData(form);
     
     const vocabulary = {
-      meaning: formData.get("meaning"),
-      reading: formData.get("reading"),
-      kanji: writingSystem === "hiragana" ? formData.get("kanji") : null,
+      meaning,
+      reading,
+      kanji: writingSystem === "hiragana" ? kanji : null,
       chapterId,
       writingSystem,
     };
 
     onAdd(vocabulary);
-    form.reset();
     toast({
-      title: "Vocabulary added",
-      description: "New vocabulary has been added to the chapter",
+      title: initialValues ? "Vocabulary updated" : "Vocabulary added",
+      description: initialValues 
+        ? "The vocabulary has been updated successfully" 
+        : "New vocabulary has been added to the chapter",
     });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow-sm">
       <div>
         <Select
+          value={writingSystem}
           onValueChange={(value: "hiragana" | "katakana") => setWritingSystem(value)}
-          defaultValue="hiragana"
         >
           <SelectTrigger>
             <SelectValue placeholder="Select writing system" />
@@ -57,16 +83,44 @@ export const VocabularyForm = ({ chapterId, onAdd }: VocabularyFormProps) => {
         </Select>
       </div>
 
-      <Input name="meaning" placeholder="Meaning" required />
-      <Input name="reading" placeholder={`Reading (${writingSystem})`} required />
+      <Input 
+        value={meaning}
+        onChange={(e) => setMeaning(e.target.value)}
+        placeholder="Meaning" 
+        required 
+      />
+      
+      <Input 
+        value={reading}
+        onChange={(e) => setReading(e.target.value)}
+        placeholder={`Reading (${writingSystem})`} 
+        required 
+      />
       
       {writingSystem === "hiragana" && (
-        <Input name="kanji" placeholder="Kanji" required />
+        <Input 
+          value={kanji}
+          onChange={(e) => setKanji(e.target.value)}
+          placeholder="Kanji (optional)" 
+        />
       )}
 
-      <Button type="submit" className="w-full bg-sakura-500 hover:bg-sakura-600">
-        Add Vocabulary
-      </Button>
+      <div className="flex gap-4">
+        <Button 
+          type="submit" 
+          className="flex-1 bg-sakura-500 hover:bg-sakura-600"
+        >
+          {initialValues ? "Update" : "Add"} Vocabulary
+        </Button>
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={onCancel}
+          className="flex-1"
+        >
+          Cancel
+        </Button>
+      </div>
     </form>
   );
 };

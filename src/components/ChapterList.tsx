@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Plus } from "lucide-react";
+import { Edit, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,9 @@ interface Chapter {
 export const ChapterList = () => {
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [newChapterName, setNewChapterName] = useState("");
+  const [isAdding, setIsAdding] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingName, setEditingName] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -25,6 +28,7 @@ export const ChapterList = () => {
       };
       setChapters([...chapters, newChapter]);
       setNewChapterName("");
+      setIsAdding(false);
       toast({
         title: "Chapter added",
         description: `${newChapter.name} has been created`,
@@ -32,8 +36,37 @@ export const ChapterList = () => {
     }
   };
 
+  const startEditing = (chapter: Chapter) => {
+    setEditingId(chapter.id);
+    setEditingName(chapter.name);
+  };
+
+  const saveEdit = (id: number) => {
+    if (editingName.trim()) {
+      setChapters(chapters.map(ch => 
+        ch.id === id ? { ...ch, name: editingName.trim() } : ch
+      ));
+      setEditingId(null);
+      setEditingName("");
+      toast({
+        title: "Chapter updated",
+        description: "The chapter name has been updated",
+      });
+    }
+  };
+
+  const deleteChapter = (id: number) => {
+    setChapters(chapters.filter(ch => ch.id !== id));
+    toast({
+      title: "Chapter deleted",
+      description: "The chapter has been removed",
+    });
+  };
+
   const handleChapterClick = (chapterId: number) => {
-    navigate(`/chapter/${chapterId}`);
+    if (editingId === null) {
+      navigate(`/chapter/${chapterId}`);
+    }
   };
 
   return (
@@ -45,30 +78,101 @@ export const ChapterList = () => {
             <p className="text-zen-600">Vocabulary Notebook</p>
           </div>
           <Button 
-            onClick={addChapter} 
+            onClick={() => setIsAdding(true)} 
             className="bg-sakura-500 hover:bg-sakura-600 text-white shadow-lg transition-all hover:shadow-xl"
+            disabled={isAdding}
           >
             <Plus className="mr-2 h-4 w-4" /> Add Chapter
           </Button>
         </div>
         
-        <div className="mb-8">
-          <Input
-            placeholder="Enter chapter name"
-            value={newChapterName}
-            onChange={(e) => setNewChapterName(e.target.value)}
-            className="w-full"
-          />
-        </div>
+        {isAdding && (
+          <div className="mb-8 space-y-4">
+            <Input
+              placeholder="Enter chapter name"
+              value={newChapterName}
+              onChange={(e) => setNewChapterName(e.target.value)}
+              className="w-full"
+              autoFocus
+            />
+            <div className="flex gap-2">
+              <Button 
+                onClick={addChapter}
+                className="bg-sakura-500 hover:bg-sakura-600"
+              >
+                Add
+              </Button>
+              <Button 
+                onClick={() => {
+                  setIsAdding(false);
+                  setNewChapterName("");
+                }}
+                variant="outline"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {chapters.map((chapter) => (
             <Card 
               key={chapter.id} 
-              className="p-8 hover:shadow-lg transition-all cursor-pointer bg-white/80 backdrop-blur-sm border-sakura-100 hover:border-sakura-200"
+              className="p-6 hover:shadow-lg transition-all cursor-pointer bg-white/80 backdrop-blur-sm border-sakura-100 hover:border-sakura-200"
               onClick={() => handleChapterClick(chapter.id)}
             >
-              <h2 className="text-2xl font-bold text-zen-800 font-japanese">{chapter.name}</h2>
+              <div className="flex items-center justify-between">
+                {editingId === chapter.id ? (
+                  <Input
+                    value={editingName}
+                    onChange={(e) => setEditingName(e.target.value)}
+                    className="flex-1 mr-2"
+                    autoFocus
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : (
+                  <h2 className="text-2xl font-bold text-zen-800 font-japanese">{chapter.name}</h2>
+                )}
+                <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                  {editingId === chapter.id ? (
+                    <>
+                      <Button
+                        size="sm"
+                        className="bg-sakura-500 hover:bg-sakura-600"
+                        onClick={() => saveEdit(chapter.id)}
+                      >
+                        Save
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setEditingId(null)}
+                      >
+                        Cancel
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => startEditing(chapter)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-red-500 hover:text-red-600"
+                        onClick={() => deleteChapter(chapter.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
             </Card>
           ))}
         </div>

@@ -84,7 +84,7 @@ const Chapter = () => {
         {!showForm && vocabularyList.map((vocabulary) => (
           <Flashcard
             key={vocabulary.id}
-            front={vocabulary.writingSystem === "hiragana" ? vocabulary.kanji || vocabulary.reading : vocabulary.reading}
+            front={vocabulary.reading}
             back={vocabulary.meaning}
             onDelete={() => handleDelete(vocabulary.id)}
             onEdit={() => handleEdit(vocabulary)}

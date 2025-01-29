@@ -81,7 +81,7 @@ const Chapter = () => {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {vocabularyList.map((vocabulary) => (
+        {!showForm && vocabularyList.map((vocabulary) => (
           <Flashcard
             key={vocabulary.id}
             front={vocabulary.writingSystem === "hiragana" ? vocabulary.kanji || vocabulary.reading : vocabulary.reading}

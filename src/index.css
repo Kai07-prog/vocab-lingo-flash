@@ -88,11 +88,11 @@
 .japanese-text-hiragana,
 .japanese-text-katakana {
   font-family: 'MS Mincho', serif;
-  font-size: 16px;
+  font-size: 30px;
   font-weight: bold;
 }
 
 .japanese-text-kanji {
   font-family: 'MS Gothic', sans-serif;
-  font-size: 14px;
+  font-size: 25px;
 }

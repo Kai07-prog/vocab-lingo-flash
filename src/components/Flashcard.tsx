@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trash2, Edit } from "lucide-react";
@@ -64,8 +64,15 @@ export const Flashcard = ({
         onClick={() => setIsFlipped(!isFlipped)}
       >
         <div className="flip-card-inner">
-          <Card className="flip-card-front flex items-center justify-center p-6">
-            <span className={textClass}>{front}</span>
+          <Card className="flip-card-front flex flex-col items-center justify-center gap-2 p-6">
+            {isKanji ? (
+              <>
+                <span className="japanese-text-hiragana">{front}</span>
+                <span className={textClass}>{front}</span>
+              </>
+            ) : (
+              <span className={textClass}>{front}</span>
+            )}
           </Card>
           
           <Card className="flip-card-back flex items-center justify-center p-6">

@@ -10,6 +10,7 @@ interface FlashcardProps {
   onEdit: () => void;
   writingSystem: "hiragana" | "katakana";
   isKanji?: boolean;
+  kanji?: string;
 }
 
 export const Flashcard = ({ 
@@ -18,7 +19,8 @@ export const Flashcard = ({
   onDelete, 
   onEdit, 
   writingSystem,
-  isKanji = false 
+  isKanji = false,
+  kanji
 }: FlashcardProps) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
@@ -68,7 +70,7 @@ export const Flashcard = ({
             {isKanji ? (
               <>
                 <span className={writingSystem === "hiragana" ? "japanese-text-hiragana" : "japanese-text-katakana"}>{front}</span>
-                <span className="japanese-text-kanji">{front}</span>
+                {kanji && <span className="japanese-text-kanji">{kanji}</span>}
               </>
             ) : (
               <span className={textClass}>{front}</span>

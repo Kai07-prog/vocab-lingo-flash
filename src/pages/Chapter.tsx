@@ -90,6 +90,7 @@ const Chapter = () => {
             onEdit={() => handleEdit(vocabulary)}
             writingSystem={vocabulary.writingSystem}
             isKanji={vocabulary.writingSystem === "hiragana" && !!vocabulary.kanji}
+            kanji={vocabulary.kanji || undefined}
           />
         ))}
       </div>

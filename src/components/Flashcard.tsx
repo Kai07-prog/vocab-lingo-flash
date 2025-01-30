@@ -68,7 +68,7 @@ export const Flashcard = ({
             {isKanji ? (
               <>
                 <span className={writingSystem === "hiragana" ? "japanese-text-hiragana" : "japanese-text-katakana"}>{front}</span>
-                <span className={textClass}>{front}</span>
+                <span className="japanese-text-kanji">{front}</span>
               </>
             ) : (
               <span className={textClass}>{front}</span>

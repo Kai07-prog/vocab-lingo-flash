@@ -29,11 +29,11 @@ const UserMenu = () => {
   };
 
   return (
-    <div className="fixed top-4 right-4 z-50">
+    <div className="fixed top-4 left-4 z-50">
       <Menubar className="border-none bg-transparent">
         <MenubarMenu>
           <MenubarTrigger className="cursor-pointer">
-            <Menu className="h-6 w-6 text-sakura-600" />
+            <Menu className="h-6 w-6 text-zen-600 hover:text-zen-800 transition-colors" />
           </MenubarTrigger>
           <MenubarContent>
             <MenubarItem className="text-sm">

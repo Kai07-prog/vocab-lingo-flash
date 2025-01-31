@@ -32,11 +32,17 @@
 @font-face {
   font-family: 'MS Mincho';
   src: local('MS Mincho');
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-smooth: always;
 }
 
 @font-face {
   font-family: 'MS Gothic';
   src: local('MS Gothic');
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-smooth: always;
 }
 
 .flip-card {
@@ -90,9 +96,15 @@
   font-family: 'MS Mincho', serif;
   font-size: 30px;
   font-weight: bold;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 .japanese-text-kanji {
   font-family: 'MS Gothic', sans-serif;
   font-size: 25px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }

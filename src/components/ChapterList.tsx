@@ -71,7 +71,7 @@ export const ChapterList = () => {
 
   return (
     <div className="container mx-auto p-6 min-h-screen bg-gradient-to-b from-sakura-50 to-white">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto mt-16"> {/* Added mt-16 for spacing from menu */}
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-4xl font-bold text-sakura-700 font-japanese mb-2">単語帳</h1>

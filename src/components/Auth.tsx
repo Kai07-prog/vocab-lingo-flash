@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 export const Auth = () => {
   const [email, setEmail] = useState("");
@@ -11,6 +12,7 @@ export const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const { signIn, signUp } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +21,7 @@ export const Auth = () => {
         await signUp(email, password);
         toast({
           title: "Account created",
-          description: "Please check your email to verify your account",
+          description: "You have successfully created an account",
         });
       } else {
         await signIn(email, password);
@@ -28,6 +30,7 @@ export const Auth = () => {
           description: "You have successfully signed in",
         });
       }
+      navigate("/");
     } catch (error) {
       toast({
         title: "Error",

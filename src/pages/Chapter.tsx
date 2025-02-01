@@ -48,15 +48,17 @@ const Chapter = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 relative z-50">
-      <div className="flex items-center gap-6 mb-6">
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate('/')}
-          className="p-2 relative z-50"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
+    <div className="container mx-auto p-6">
+      <Button 
+        variant="ghost" 
+        onClick={() => navigate('/')}
+        className="fixed top-4 left-4 z-[100] bg-white shadow-md hover:bg-gray-100"
+      >
+        <ArrowLeft className="h-5 w-5" />
+        <span className="ml-2">Back</span>
+      </Button>
+
+      <div className="mt-16">
         <div className="flex gap-4">
           <Button 
             onClick={() => setShowForm(true)} 
@@ -74,35 +76,35 @@ const Chapter = () => {
             Kanji Test
           </Button>
         </div>
-      </div>
 
-      {showForm && (
-        <div className="mb-6">
-          <VocabularyForm 
-            chapterId={chapterId} 
-            onAdd={handleAddVocabulary}
-            onCancel={() => {
-              setShowForm(false);
-              setEditingVocabulary(null);
-            }}
-            initialValues={editingVocabulary || undefined}
-          />
+        {showForm && (
+          <div className="mb-6">
+            <VocabularyForm 
+              chapterId={chapterId} 
+              onAdd={handleAddVocabulary}
+              onCancel={() => {
+                setShowForm(false);
+                setEditingVocabulary(null);
+              }}
+              initialValues={editingVocabulary || undefined}
+            />
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+          {!showForm && vocabularyList.map((vocabulary) => (
+            <Flashcard
+              key={vocabulary.id}
+              front={vocabulary.reading}
+              back={vocabulary.meaning}
+              onDelete={() => handleDelete(vocabulary.id)}
+              onEdit={() => handleEdit(vocabulary)}
+              writingSystem={vocabulary.writingSystem}
+              isKanji={vocabulary.writingSystem === "hiragana" && !!vocabulary.kanji}
+              kanji={vocabulary.kanji || undefined}
+            />
+          ))}
         </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {!showForm && vocabularyList.map((vocabulary) => (
-          <Flashcard
-            key={vocabulary.id}
-            front={vocabulary.reading}
-            back={vocabulary.meaning}
-            onDelete={() => handleDelete(vocabulary.id)}
-            onEdit={() => handleEdit(vocabulary)}
-            writingSystem={vocabulary.writingSystem}
-            isKanji={vocabulary.writingSystem === "hiragana" && !!vocabulary.kanji}
-            kanji={vocabulary.kanji || undefined}
-          />
-        ))}
       </div>
     </div>
   );

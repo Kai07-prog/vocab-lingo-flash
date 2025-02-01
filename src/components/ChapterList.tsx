@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Edit, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
 
 interface Chapter {
   id: number;
@@ -20,20 +21,60 @@ export const ChapterList = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const addChapter = () => {
-    if (newChapterName.trim()) {
-      const newChapter = {
-        id: chapters.length + 1,
-        name: newChapterName.trim(),
-      };
-      setChapters([...chapters, newChapter]);
-      setNewChapterName("");
-      setIsAdding(false);
+  // Fetch chapters when component mounts
+  useEffect(() => {
+    fetchChapters();
+  }, []);
+
+  const fetchChapters = async () => {
+    const { data, error } = await supabase
+      .from('chapters')
+      .select('*')
+      .order('created_at', { ascending: true });
+
+    if (error) {
       toast({
-        title: "Chapter added",
-        description: `${newChapter.name} has been created`,
-        duration: 2000, // 2 seconds duration
+        title: "Error fetching chapters",
+        description: error.message,
+        variant: "destructive",
       });
+      return;
+    }
+
+    if (data) {
+      setChapters(data);
+    }
+  };
+
+  const addChapter = async () => {
+    if (newChapterName.trim()) {
+      const { data, error } = await supabase
+        .from('chapters')
+        .insert([
+          { name: newChapterName.trim() }
+        ])
+        .select()
+        .single();
+
+      if (error) {
+        toast({
+          title: "Error adding chapter",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data) {
+        setChapters([...chapters, data]);
+        setNewChapterName("");
+        setIsAdding(false);
+        toast({
+          title: "Chapter added",
+          description: `${data.name} has been created`,
+          duration: 2000,
+        });
+      }
     }
   };
 
@@ -42,8 +83,22 @@ export const ChapterList = () => {
     setEditingName(chapter.name);
   };
 
-  const saveEdit = (id: number) => {
+  const saveEdit = async (id: number) => {
     if (editingName.trim()) {
+      const { error } = await supabase
+        .from('chapters')
+        .update({ name: editingName.trim() })
+        .eq('id', id);
+
+      if (error) {
+        toast({
+          title: "Error updating chapter",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
       setChapters(chapters.map(ch => 
         ch.id === id ? { ...ch, name: editingName.trim() } : ch
       ));
@@ -56,7 +111,21 @@ export const ChapterList = () => {
     }
   };
 
-  const deleteChapter = (id: number) => {
+  const deleteChapter = async (id: number) => {
+    const { error } = await supabase
+      .from('chapters')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      toast({
+        title: "Error deleting chapter",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setChapters(chapters.filter(ch => ch.id !== id));
     toast({
       title: "Chapter deleted",
@@ -72,7 +141,7 @@ export const ChapterList = () => {
 
   return (
     <div className="container mx-auto p-6 min-h-screen bg-gradient-to-b from-sakura-50 to-white">
-      <div className="max-w-4xl mx-auto mt-20"> {/* Increased mt-20 for more spacing from menu */}
+      <div className="max-w-4xl mx-auto mt-20">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-4xl font-bold text-sakura-700 font-japanese mb-2">単語帳</h1>

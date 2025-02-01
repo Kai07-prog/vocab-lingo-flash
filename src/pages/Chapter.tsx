@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { VocabularyForm } from "@/components/VocabularyForm";
 import { Button } from "@/components/ui/button";
 import { Flashcard } from "@/components/Flashcard";
-import { Plus, GraduationCap, PenTool } from "lucide-react";
+import { Plus, GraduationCap, PenTool, ArrowLeft } from "lucide-react";
 
 interface Vocabulary {
   id: string;
@@ -15,6 +15,7 @@ interface Vocabulary {
 
 const Chapter = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const chapterId = Number(id);
   const [showForm, setShowForm] = useState(false);
   const [vocabularyList, setVocabularyList] = useState<Vocabulary[]>([]);
@@ -48,22 +49,31 @@ const Chapter = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="flex gap-4 mb-6">
+      <div className="flex items-center gap-6 mb-6">
         <Button 
-          onClick={() => setShowForm(true)} 
-          className="bg-sakura-500 hover:bg-sakura-600"
+          variant="ghost" 
+          onClick={() => navigate('/')}
+          className="p-2"
         >
-          <Plus className="mr-2 h-4 w-4" />
-          Add Vocabulary
+          <ArrowLeft className="h-5 w-5" />
         </Button>
-        <Button className="bg-zen-500 hover:bg-zen-600">
-          <GraduationCap className="mr-2 h-4 w-4" />
-          Start Test
-        </Button>
-        <Button className="bg-zen-500 hover:bg-zen-600">
-          <PenTool className="mr-2 h-4 w-4" />
-          Kanji Test
-        </Button>
+        <div className="flex gap-4">
+          <Button 
+            onClick={() => setShowForm(true)} 
+            className="bg-sakura-500 hover:bg-sakura-600"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add Vocabulary
+          </Button>
+          <Button className="bg-zen-500 hover:bg-zen-600">
+            <GraduationCap className="mr-2 h-4 w-4" />
+            Start Test
+          </Button>
+          <Button className="bg-zen-500 hover:bg-zen-600">
+            <PenTool className="mr-2 h-4 w-4" />
+            Kanji Test
+          </Button>
+        </div>
       </div>
 
       {showForm && (

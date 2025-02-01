@@ -21,15 +21,18 @@ export const ChapterList = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Fetch chapters when component mounts
   useEffect(() => {
     fetchChapters();
   }, []);
 
   const fetchChapters = async () => {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) return;
+
     const { data, error } = await supabase
       .from('chapters')
       .select('*')
+      .eq('user_id', userData.user.id)
       .order('created_at', { ascending: true });
 
     if (error) {
@@ -48,10 +51,16 @@ export const ChapterList = () => {
 
   const addChapter = async () => {
     if (newChapterName.trim()) {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) return;
+
       const { data, error } = await supabase
         .from('chapters')
         .insert([
-          { name: newChapterName.trim() }
+          { 
+            name: newChapterName.trim(),
+            user_id: userData.user.id
+          }
         ])
         .select()
         .single();
@@ -85,10 +94,14 @@ export const ChapterList = () => {
 
   const saveEdit = async (id: number) => {
     if (editingName.trim()) {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) return;
+
       const { error } = await supabase
         .from('chapters')
         .update({ name: editingName.trim() })
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', userData.user.id);
 
       if (error) {
         toast({
@@ -112,10 +125,14 @@ export const ChapterList = () => {
   };
 
   const deleteChapter = async (id: number) => {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) return;
+
     const { error } = await supabase
       .from('chapters')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .eq('user_id', userData.user.id);
 
     if (error) {
       toast({

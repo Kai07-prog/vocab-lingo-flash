@@ -48,12 +48,12 @@ const Chapter = () => {
   };
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-6 relative z-50">
       <div className="flex items-center gap-6 mb-6">
         <Button 
           variant="ghost" 
           onClick={() => navigate('/')}
-          className="p-2"
+          className="p-2 relative z-50"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>

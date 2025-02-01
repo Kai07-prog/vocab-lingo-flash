@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Edit, Plus, Trash2, X } from "lucide-react";
+import { Edit, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
@@ -32,6 +32,7 @@ export const ChapterList = () => {
       toast({
         title: "Chapter added",
         description: `${newChapter.name} has been created`,
+        duration: 2000, // 2 seconds duration
       });
     }
   };
@@ -71,7 +72,7 @@ export const ChapterList = () => {
 
   return (
     <div className="container mx-auto p-6 min-h-screen bg-gradient-to-b from-sakura-50 to-white">
-      <div className="max-w-4xl mx-auto mt-16"> {/* Added mt-16 for spacing from menu */}
+      <div className="max-w-4xl mx-auto mt-20"> {/* Increased mt-20 for more spacing from menu */}
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-4xl font-bold text-sakura-700 font-japanese mb-2">単語帳</h1>

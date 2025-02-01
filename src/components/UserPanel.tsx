@@ -19,7 +19,7 @@ export const UserPanel = () => {
     <div className="fixed top-4 left-4 z-50">
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
-          <button className="p-2 rounded-full hover:bg-zen-100 transition-colors">
+          <button className="p-2 transition-colors">
             {isOpen ? (
               <X className="h-6 w-6 text-zen-600 hover:text-zen-800 transition-colors" />
             ) : (

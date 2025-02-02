@@ -147,29 +147,63 @@ export const VocabularyTest = ({ chapterId, onClose }: VocabularyTestProps) => {
     const incorrectAnswers = testResults.filter(result => !result.isCorrect);
 
     return (
-      <Card className="p-6 max-w-xl mx-auto">
-        <h2 className="text-2xl font-bold mb-4">Test Complete!</h2>
-        <p className="text-lg mb-4">Accuracy: {accuracy.toFixed(1)}%</p>
+      <Card className="p-8 max-w-xl mx-auto bg-gradient-to-br from-white to-gray-50">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold mb-2">Test Complete!</h2>
+          <div className="inline-block rounded-full bg-zen-100 px-6 py-3 mb-4">
+            <p className="text-2xl font-semibold text-zen-800">
+              Accuracy: {accuracy.toFixed(1)}%
+            </p>
+          </div>
+        </div>
         
-        {incorrectAnswers.length > 0 && (
-          <div className="mt-4">
-            <h3 className="text-lg font-semibold mb-2">Words to Review:</h3>
-            <div className="space-y-2">
+        {incorrectAnswers.length > 0 ? (
+          <div className="mt-6">
+            <h3 className="text-xl font-semibold mb-4 text-zen-800">Words to Review:</h3>
+            <div className="space-y-3">
               {incorrectAnswers.map((result, index) => (
-                <div key={index} className="p-2 bg-red-50 rounded">
-                  <p><span className="font-semibold">Word:</span> {result.word}</p>
-                  <p><span className="font-semibold">Question Type:</span> {result.type}</p>
-                  <p><span className="font-semibold">Your answer:</span> {result.userAnswer}</p>
-                  <p><span className="font-semibold">Correct answer:</span> {result.correctAnswer}</p>
+                <div 
+                  key={index} 
+                  className="p-4 rounded-lg border border-sakura-200 bg-sakura-50 transition-all hover:shadow-md"
+                >
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-zen-600 mb-1">Word</p>
+                      <p className="font-medium">{result.word}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-zen-600 mb-1">Question Type</p>
+                      <p className="font-medium capitalize">{result.type}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-zen-600 mb-1">Your Answer</p>
+                      <p className="font-medium">{result.userAnswer}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-zen-600 mb-1">Correct Answer</p>
+                      <p className="font-medium">{result.correctAnswer}</p>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
+        ) : (
+          <div className="text-center mt-6 p-6 bg-green-50 rounded-lg">
+            <p className="text-lg text-green-700 font-medium">
+              Perfect score! You got all answers correct! 🎉
+            </p>
+          </div>
         )}
         
-        <Button onClick={onClose} className="mt-6">
-          Close
-        </Button>
+        <div className="mt-8 text-center">
+          <Button 
+            onClick={onClose}
+            className="bg-zen-600 hover:bg-zen-700 text-white px-8 py-2"
+          >
+            Close Test
+          </Button>
+        </div>
       </Card>
     );
   }

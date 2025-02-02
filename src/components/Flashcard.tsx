@@ -33,12 +33,6 @@ export const Flashcard = ({
     }, 300);
   };
 
-  const textClass = isKanji 
-    ? "japanese-text-kanji"
-    : writingSystem === "hiragana" 
-      ? "japanese-text-hiragana" 
-      : "japanese-text-katakana";
-
   return (
     <div className="relative">
       <div className="absolute top-2 right-2 z-10 flex gap-2">
@@ -75,7 +69,9 @@ export const Flashcard = ({
                 {kanji && <span className="japanese-text-kanji text-3xl mt-2">{kanji}</span>}
               </>
             ) : (
-              <span className={`${textClass} text-2xl`}>{front}</span>
+              <span className={`${writingSystem === "hiragana" ? "japanese-text-hiragana" : "japanese-text-katakana"} text-2xl`}>
+                {front}
+              </span>
             )}
           </Card>
           

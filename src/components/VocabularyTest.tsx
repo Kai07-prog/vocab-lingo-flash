@@ -26,6 +26,8 @@ interface TestResult {
   type: "meaning" | "reading";
 }
 
+type QuestionType = "meaning" | "reading";
+
 export const VocabularyTest = ({ chapterId, onClose }: VocabularyTestProps) => {
   const [vocabularyList, setVocabularyList] = useState<Vocabulary[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<number>(0);
@@ -34,7 +36,7 @@ export const VocabularyTest = ({ chapterId, onClose }: VocabularyTestProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [isTestComplete, setIsTestComplete] = useState(false);
-  const [testQuestions, setTestQuestions] = useState<Array<{ vocab: Vocabulary; type: "meaning" | "reading" }>>([]);
+  const [testQuestions, setTestQuestions] = useState<Array<{ vocab: Vocabulary; type: QuestionType }>>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -61,15 +63,22 @@ export const VocabularyTest = ({ chapterId, onClose }: VocabularyTestProps) => {
     }
 
     if (data) {
-      setVocabularyList(data);
+      const formattedData = data.map(item => ({
+        ...item,
+        writingSystem: item.writing_system
+      }));
+      setVocabularyList(formattedData);
+      
       // Generate test questions (each word appears 1-2 times)
-      const questions = data.flatMap(vocab => {
-        const questions = [{ vocab, type: Math.random() < 0.5 ? "meaning" : "reading" as const }];
+      const questions = formattedData.flatMap(vocab => {
+        const questions: Array<{ vocab: Vocabulary; type: QuestionType }> = [
+          { vocab, type: Math.random() < 0.5 ? "meaning" : "reading" }
+        ];
         // 50% chance to add a second question for this word
         if (Math.random() < 0.5) {
           questions.push({ 
             vocab, 
-            type: questions[0].type === "meaning" ? "reading" : "meaning" as const 
+            type: questions[0].type === "meaning" ? "reading" : "meaning"
           });
         }
         return questions;

@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { VocabularyForm } from "@/components/VocabularyForm";
 import { Button } from "@/components/ui/button";
 import { Flashcard } from "@/components/Flashcard";
 import { VocabularyTest } from "@/components/VocabularyTest";
 import { Plus, GraduationCap, PenTool, ArrowLeft } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
 
 interface Vocabulary {
   id: string;
@@ -22,26 +24,105 @@ const Chapter = () => {
   const [showTest, setShowTest] = useState(false);
   const [vocabularyList, setVocabularyList] = useState<Vocabulary[]>([]);
   const [editingVocabulary, setEditingVocabulary] = useState<Vocabulary | null>(null);
+  const { toast } = useToast();
 
-  const handleAddVocabulary = (vocabulary: any) => {
-    const newVocabulary = {
-      ...vocabulary,
-      id: Math.random().toString(36).substr(2, 9)
-    };
-    
-    if (editingVocabulary) {
-      setVocabularyList(vocabularyList.map(v => 
-        v.id === editingVocabulary.id ? newVocabulary : v
-      ));
-      setEditingVocabulary(null);
-    } else {
-      setVocabularyList([...vocabularyList, newVocabulary]);
+  useEffect(() => {
+    fetchVocabulary();
+  }, [chapterId]);
+
+  const fetchVocabulary = async () => {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) return;
+
+    const { data, error } = await supabase
+      .from('vocabulary')
+      .select('*')
+      .eq('chapter_id', chapterId)
+      .eq('user_id', userData.user.id);
+
+    if (error) {
+      toast({
+        title: "Error fetching vocabulary",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
     }
-    setShowForm(false);
+
+    if (data) {
+      setVocabularyList(data);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setVocabularyList(vocabularyList.filter(v => v.id !== id));
+  const handleAddVocabulary = async (vocabulary: any) => {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) return;
+
+    if (editingVocabulary) {
+      // Update existing vocabulary
+      const { error } = await supabase
+        .from('vocabulary')
+        .update({
+          meaning: vocabulary.meaning,
+          reading: vocabulary.reading,
+          kanji: vocabulary.kanji,
+          writing_system: vocabulary.writingSystem,
+        })
+        .eq('id', editingVocabulary.id);
+
+      if (error) {
+        toast({
+          title: "Error updating vocabulary",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+    } else {
+      // Insert new vocabulary
+      const { error } = await supabase
+        .from('vocabulary')
+        .insert({
+          chapter_id: chapterId,
+          user_id: userData.user.id,
+          meaning: vocabulary.meaning,
+          reading: vocabulary.reading,
+          kanji: vocabulary.kanji,
+          writing_system: vocabulary.writingSystem,
+        });
+
+      if (error) {
+        toast({
+          title: "Error adding vocabulary",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    // Refresh the vocabulary list
+    await fetchVocabulary();
+    setShowForm(false);
+    setEditingVocabulary(null);
+  };
+
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase
+      .from('vocabulary')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      toast({
+        title: "Error deleting vocabulary",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    await fetchVocabulary();
   };
 
   const handleEdit = (vocabulary: Vocabulary) => {

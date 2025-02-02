@@ -51,6 +51,47 @@ export type Database = {
         }
         Relationships: []
       }
+      vocabulary: {
+        Row: {
+          chapter_id: number
+          created_at: string
+          id: string
+          kanji: string | null
+          meaning: string
+          reading: string
+          user_id: string
+          writing_system: string
+        }
+        Insert: {
+          chapter_id: number
+          created_at?: string
+          id?: string
+          kanji?: string | null
+          meaning: string
+          reading: string
+          user_id: string
+          writing_system: string
+        }
+        Update: {
+          chapter_id?: number
+          created_at?: string
+          id?: string
+          kanji?: string | null
+          meaning?: string
+          reading?: string
+          user_id?: string
+          writing_system?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vocabulary_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

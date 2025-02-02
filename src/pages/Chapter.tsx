@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { VocabularyForm } from "@/components/VocabularyForm";
 import { Button } from "@/components/ui/button";
 import { Flashcard } from "@/components/Flashcard";
+import { VocabularyTest } from "@/components/VocabularyTest";
 import { Plus, GraduationCap, PenTool, ArrowLeft } from "lucide-react";
 
 interface Vocabulary {
@@ -18,6 +19,7 @@ const Chapter = () => {
   const navigate = useNavigate();
   const chapterId = Number(id);
   const [showForm, setShowForm] = useState(false);
+  const [showTest, setShowTest] = useState(false);
   const [vocabularyList, setVocabularyList] = useState<Vocabulary[]>([]);
   const [editingVocabulary, setEditingVocabulary] = useState<Vocabulary | null>(null);
 
@@ -67,7 +69,10 @@ const Chapter = () => {
             <Plus className="mr-2 h-4 w-4" />
             Add Vocabulary
           </Button>
-          <Button className="bg-zen-500 hover:bg-zen-600">
+          <Button 
+            className="bg-zen-500 hover:bg-zen-600"
+            onClick={() => setShowTest(true)}
+          >
             <GraduationCap className="mr-2 h-4 w-4" />
             Start Test
           </Button>
@@ -91,20 +96,29 @@ const Chapter = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-          {!showForm && vocabularyList.map((vocabulary) => (
-            <Flashcard
-              key={vocabulary.id}
-              front={vocabulary.reading}
-              back={vocabulary.meaning}
-              onDelete={() => handleDelete(vocabulary.id)}
-              onEdit={() => handleEdit(vocabulary)}
-              writingSystem={vocabulary.writingSystem}
-              isKanji={vocabulary.writingSystem === "hiragana" && !!vocabulary.kanji}
-              kanji={vocabulary.kanji || undefined}
+        {showTest ? (
+          <div className="mt-6">
+            <VocabularyTest 
+              chapterId={chapterId}
+              onClose={() => setShowTest(false)}
             />
-          ))}
-        </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+            {vocabularyList.map((vocabulary) => (
+              <Flashcard
+                key={vocabulary.id}
+                front={vocabulary.reading}
+                back={vocabulary.meaning}
+                onDelete={() => handleDelete(vocabulary.id)}
+                onEdit={() => handleEdit(vocabulary)}
+                writingSystem={vocabulary.writingSystem}
+                isKanji={vocabulary.writingSystem === "hiragana" && !!vocabulary.kanji}
+                kanji={vocabulary.kanji || undefined}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

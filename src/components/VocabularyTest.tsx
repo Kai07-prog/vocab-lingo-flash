@@ -18,13 +18,23 @@ interface VocabularyTestProps {
   onClose: () => void;
 }
 
+interface TestResult {
+  word: string;
+  userAnswer: string;
+  correctAnswer: string;
+  isCorrect: boolean;
+  type: "meaning" | "reading";
+}
+
 export const VocabularyTest = ({ chapterId, onClose }: VocabularyTestProps) => {
   const [vocabularyList, setVocabularyList] = useState<Vocabulary[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<number>(0);
   const [userAnswer, setUserAnswer] = useState("");
   const [score, setScore] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [askMeaning, setAskMeaning] = useState(true); // Toggle between asking meaning or reading
+  const [testResults, setTestResults] = useState<TestResult[]>([]);
+  const [isTestComplete, setIsTestComplete] = useState(false);
+  const [testQuestions, setTestQuestions] = useState<Array<{ vocab: Vocabulary; type: "meaning" | "reading" }>>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -52,15 +62,29 @@ export const VocabularyTest = ({ chapterId, onClose }: VocabularyTestProps) => {
 
     if (data) {
       setVocabularyList(data);
+      // Generate test questions (each word appears 1-2 times)
+      const questions = data.flatMap(vocab => {
+        const questions = [{ vocab, type: Math.random() < 0.5 ? "meaning" : "reading" as const }];
+        // 50% chance to add a second question for this word
+        if (Math.random() < 0.5) {
+          questions.push({ 
+            vocab, 
+            type: questions[0].type === "meaning" ? "reading" : "meaning" as const 
+          });
+        }
+        return questions;
+      });
+      // Shuffle the questions
+      setTestQuestions(questions.sort(() => Math.random() - 0.5));
       setIsLoading(false);
     }
   };
 
   const checkAnswer = () => {
-    const currentVocab = vocabularyList[currentQuestion];
-    const isCorrect = askMeaning 
-      ? userAnswer.toLowerCase() === currentVocab.meaning.toLowerCase()
-      : userAnswer === currentVocab.reading;
+    const currentQ = testQuestions[currentQuestion];
+    const isCorrect = currentQ.type === "meaning"
+      ? userAnswer.toLowerCase() === currentQ.vocab.meaning.toLowerCase()
+      : userAnswer === currentQ.vocab.reading;
 
     if (isCorrect) {
       setScore(score + 1);
@@ -72,24 +96,27 @@ export const VocabularyTest = ({ chapterId, onClose }: VocabularyTestProps) => {
     } else {
       toast({
         title: "Incorrect",
-        description: `The correct answer was: ${askMeaning ? currentVocab.meaning : currentVocab.reading}`,
+        description: `The correct answer was: ${currentQ.type === "meaning" 
+          ? currentQ.vocab.meaning 
+          : currentQ.vocab.reading}`,
         variant: "destructive",
         duration: 2000,
       });
     }
 
+    setTestResults([...testResults, {
+      word: currentQ.vocab.reading + (currentQ.vocab.kanji ? ` (${currentQ.vocab.kanji})` : ''),
+      userAnswer,
+      correctAnswer: currentQ.type === "meaning" ? currentQ.vocab.meaning : currentQ.vocab.reading,
+      isCorrect,
+      type: currentQ.type
+    }]);
+
     setUserAnswer("");
-    if (currentQuestion < vocabularyList.length - 1) {
+    if (currentQuestion < testQuestions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
-      setAskMeaning(!askMeaning);
     } else {
-      // Test completed
-      toast({
-        title: "Test completed!",
-        description: `Your score: ${score + (isCorrect ? 1 : 0)}/${vocabularyList.length}`,
-        duration: 3000,
-      });
-      setTimeout(onClose, 3000);
+      setIsTestComplete(true);
     }
   };
 
@@ -106,28 +133,66 @@ export const VocabularyTest = ({ chapterId, onClose }: VocabularyTestProps) => {
     );
   }
 
-  const currentVocab = vocabularyList[currentQuestion];
+  if (isTestComplete) {
+    const accuracy = (score / testQuestions.length) * 100;
+    const incorrectAnswers = testResults.filter(result => !result.isCorrect);
+
+    return (
+      <Card className="p-6 max-w-xl mx-auto">
+        <h2 className="text-2xl font-bold mb-4">Test Complete!</h2>
+        <p className="text-lg mb-4">Accuracy: {accuracy.toFixed(1)}%</p>
+        
+        {incorrectAnswers.length > 0 && (
+          <div className="mt-4">
+            <h3 className="text-lg font-semibold mb-2">Words to Review:</h3>
+            <div className="space-y-2">
+              {incorrectAnswers.map((result, index) => (
+                <div key={index} className="p-2 bg-red-50 rounded">
+                  <p><span className="font-semibold">Word:</span> {result.word}</p>
+                  <p><span className="font-semibold">Question Type:</span> {result.type}</p>
+                  <p><span className="font-semibold">Your answer:</span> {result.userAnswer}</p>
+                  <p><span className="font-semibold">Correct answer:</span> {result.correctAnswer}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        <Button onClick={onClose} className="mt-6">
+          Close
+        </Button>
+      </Card>
+    );
+  }
+
+  const currentQ = testQuestions[currentQuestion];
 
   return (
     <Card className="p-6 max-w-xl mx-auto">
       <div className="text-right mb-4">
         <span className="text-sm text-gray-500">
-          Question {currentQuestion + 1} of {vocabularyList.length}
+          Question {currentQuestion + 1} of {testQuestions.length}
         </span>
       </div>
 
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-2">
-          {askMeaning 
+          {currentQ.type === "meaning" 
             ? `What is the meaning of:`
-            : `What is the ${currentVocab.writingSystem} reading for:`
+            : `What is the ${currentQ.vocab.writingSystem} reading for:`
           }
         </h3>
-        <p className={`text-center mb-4 ${askMeaning ? currentVocab.writingSystem === "hiragana" ? "japanese-text-hiragana" : "japanese-text-katakana" : ""}`}>
-          {askMeaning ? currentVocab.reading : currentVocab.meaning}
+        <p className={`text-center mb-4 ${
+          currentQ.type === "meaning" 
+            ? currentQ.vocab.writingSystem === "hiragana" 
+              ? "japanese-text-hiragana text-2xl" 
+              : "japanese-text-katakana text-2xl"
+            : ""
+        }`}>
+          {currentQ.type === "meaning" ? currentQ.vocab.reading : currentQ.vocab.meaning}
         </p>
-        {currentVocab.kanji && askMeaning && (
-          <p className="japanese-text-kanji text-center mb-4">{currentVocab.kanji}</p>
+        {currentQ.vocab.kanji && currentQ.type === "meaning" && (
+          <p className="japanese-text-kanji text-3xl text-center mb-4">{currentQ.vocab.kanji}</p>
         )}
       </div>
 

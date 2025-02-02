@@ -63,7 +63,7 @@ export const VocabularyForm = ({
       description: initialValues 
         ? "The vocabulary has been updated successfully" 
         : "New vocabulary has been added to the chapter",
-      duration: 2000, // 2 seconds duration
+      duration: 2000,
     });
   };
 
@@ -74,12 +74,12 @@ export const VocabularyForm = ({
           value={writingSystem}
           onValueChange={(value: "hiragana" | "katakana") => setWritingSystem(value)}
         >
-          <SelectTrigger>
+          <SelectTrigger className="bg-white">
             <SelectValue placeholder="Select writing system" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="hiragana">Hiragana</SelectItem>
-            <SelectItem value="katakana">Katakana</SelectItem>
+          <SelectContent className="bg-white border shadow-md">
+            <SelectItem value="hiragana" className="hover:bg-gray-100">Hiragana</SelectItem>
+            <SelectItem value="katakana" className="hover:bg-gray-100">Katakana</SelectItem>
           </SelectContent>
         </Select>
       </div>

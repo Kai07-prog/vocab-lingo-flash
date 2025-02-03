@@ -13,7 +13,7 @@ interface Vocabulary {
   meaning: string;
   reading: string;
   kanji: string | null;
-  writingSystem: "hiragana" | "katakana";
+  writing_system: "hiragana" | "katakana";
 }
 
 const Chapter = () => {
@@ -193,8 +193,8 @@ const Chapter = () => {
                 back={vocabulary.meaning}
                 onDelete={() => handleDelete(vocabulary.id)}
                 onEdit={() => handleEdit(vocabulary)}
-                writingSystem={vocabulary.writingSystem}
-                isKanji={vocabulary.writingSystem === "hiragana" && !!vocabulary.kanji}
+                writingSystem={vocabulary.writing_system}
+                isKanji={vocabulary.writing_system === "hiragana" && !!vocabulary.kanji}
                 kanji={vocabulary.kanji || undefined}
               />
             ))}

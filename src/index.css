@@ -104,7 +104,8 @@
 
 .japanese-text-kanji {
   font-family: 'MS Gothic', sans-serif;
-  font-size: 32px;
+  font-size: 28px;
+  font-weight: 400;
   letter-spacing: 0.02em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

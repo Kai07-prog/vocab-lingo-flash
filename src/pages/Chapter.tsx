@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { VocabularyForm } from "@/components/VocabularyForm";
 import { Button } from "@/components/ui/button";
 import { Flashcard } from "@/components/Flashcard";
-import { VocabularyTest } from "@/components/VocabularyTest";
-import { Plus, GraduationCap, PenTool, ArrowLeft } from "lucide-react";
+import { Plus } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 
@@ -18,10 +17,8 @@ interface Vocabulary {
 
 const Chapter = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
   const chapterId = Number(id);
   const [showForm, setShowForm] = useState(false);
-  const [showTest, setShowTest] = useState(false);
   const [vocabularyList, setVocabularyList] = useState<Vocabulary[]>([]);
   const [editingVocabulary, setEditingVocabulary] = useState<Vocabulary | null>(null);
   const { toast } = useToast();
@@ -65,10 +62,11 @@ const Chapter = () => {
         .update({
           meaning: vocabulary.meaning,
           reading: vocabulary.reading,
-          kanji: vocabulary.kanji,
+          kanji: vocabulary.kanji || null,
           writing_system: vocabulary.writingSystem,
         })
-        .eq('id', editingVocabulary.id);
+        .eq('id', editingVocabulary.id)
+        .eq('user_id', userData.user.id);
 
       if (error) {
         toast({
@@ -79,7 +77,7 @@ const Chapter = () => {
         return;
       }
     } else {
-      // Insert new vocabulary
+      // Add new vocabulary
       const { error } = await supabase
         .from('vocabulary')
         .insert({
@@ -87,7 +85,7 @@ const Chapter = () => {
           user_id: userData.user.id,
           meaning: vocabulary.meaning,
           reading: vocabulary.reading,
-          kanji: vocabulary.kanji,
+          kanji: vocabulary.kanji || null,
           writing_system: vocabulary.writingSystem,
         });
 
@@ -101,17 +99,20 @@ const Chapter = () => {
       }
     }
 
-    // Refresh the vocabulary list
     await fetchVocabulary();
     setShowForm(false);
     setEditingVocabulary(null);
   };
 
   const handleDelete = async (id: string) => {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) return;
+
     const { error } = await supabase
       .from('vocabulary')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .eq('user_id', userData.user.id);
 
     if (error) {
       toast({
@@ -132,41 +133,19 @@ const Chapter = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <Button 
-        variant="ghost" 
-        onClick={() => navigate('/')}
-        className="fixed top-4 left-4 z-[100] bg-white shadow-md hover:bg-gray-100"
-      >
-        <ArrowLeft className="h-5 w-5" />
-        <span className="ml-2">Back</span>
-      </Button>
-
-      <div className="mt-16">
-        <div className="flex gap-4">
-          <Button 
-            onClick={() => setShowForm(true)} 
-            className="bg-sakura-500 hover:bg-sakura-600"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Add Vocabulary
-          </Button>
-          <Button 
-            className="bg-zen-500 hover:bg-zen-600"
-            onClick={() => setShowTest(true)}
-          >
-            <GraduationCap className="mr-2 h-4 w-4" />
-            Start Test
-          </Button>
-          <Button className="bg-zen-500 hover:bg-zen-600">
-            <PenTool className="mr-2 h-4 w-4" />
-            Kanji Test
-          </Button>
-        </div>
+      <div className="max-w-4xl mx-auto">
+        <Button 
+          onClick={() => setShowForm(true)} 
+          className="mb-6 bg-sakura-500 hover:bg-sakura-600"
+          disabled={showForm}
+        >
+          <Plus className="mr-2 h-4 w-4" /> Add Vocabulary
+        </Button>
 
         {showForm && (
-          <div className="mb-6">
-            <VocabularyForm 
-              chapterId={chapterId} 
+          <div className="mb-8">
+            <VocabularyForm
+              chapterId={chapterId}
               onAdd={handleAddVocabulary}
               onCancel={() => {
                 setShowForm(false);
@@ -175,22 +154,15 @@ const Chapter = () => {
               initialValues={editingVocabulary ? {
                 meaning: editingVocabulary.meaning,
                 reading: editingVocabulary.reading,
-                kanji: editingVocabulary.kanji,
-                writingSystem: editingVocabulary.writing_system
+                kanji: editingVocabulary.kanji || "",
+                writingSystem: editingVocabulary.writing_system,
               } : undefined}
             />
           </div>
         )}
 
-        {showTest ? (
-          <div className="mt-6">
-            <VocabularyTest 
-              chapterId={chapterId}
-              onClose={() => setShowTest(false)}
-            />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+        {!showForm && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {vocabularyList.map((vocabulary) => (
               <Flashcard
                 key={vocabulary.id}
@@ -203,6 +175,12 @@ const Chapter = () => {
                 kanji={vocabulary.kanji || undefined}
               />
             ))}
+          </div>
+        )}
+
+        {!showForm && vocabularyList.length === 0 && (
+          <div className="text-center py-16">
+            <p className="text-zen-500 text-lg">No vocabulary words yet. Add your first word to get started!</p>
           </div>
         )}
       </div>

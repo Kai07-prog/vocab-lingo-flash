@@ -126,7 +126,10 @@ const Chapter = () => {
   };
 
   const handleEdit = (vocabulary: Vocabulary) => {
-    setEditingVocabulary(vocabulary);
+    setEditingVocabulary({
+      ...vocabulary,
+      writingSystem: vocabulary.writing_system
+    });
     setShowForm(true);
   };
 

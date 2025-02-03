@@ -30,7 +30,7 @@ export const Flashcard = ({
     setIsExiting(true);
     setTimeout(() => {
       onDelete();
-    }, 200); // Reduced from 300ms to 200ms for better performance
+    }, 200);
   };
 
   return (
@@ -60,13 +60,15 @@ export const Flashcard = ({
         onClick={() => setIsFlipped(!isFlipped)}
       >
         <div className="flip-card-inner">
-          <Card className="flip-card-front flex flex-col items-center justify-center gap-2 p-6">
-            <span className={`${writingSystem === "hiragana" ? "japanese-text-hiragana" : "japanese-text-katakana"} text-2xl`}>
-              {front}
-            </span>
-            {isKanji && kanji && (
-              <span className="japanese-text-kanji text-3xl mt-1">{kanji}</span>
-            )}
+          <Card className="flip-card-front flex flex-col items-center justify-center p-6">
+            <div className="flex flex-col items-center gap-1">
+              <span className={`${writingSystem === "hiragana" ? "japanese-text-hiragana" : "japanese-text-katakana"} text-2xl`}>
+                {front}
+              </span>
+              {isKanji && kanji && (
+                <span className="japanese-text-kanji text-3xl text-gray-700">{kanji}</span>
+              )}
+            </div>
           </Card>
           
           <Card className="flip-card-back flex items-center justify-center p-6">

@@ -23,7 +23,7 @@ interface TestResult {
   userAnswer: string;
   correctAnswer: string;
   isCorrect: boolean;
-  type: "meaning" | "reading";
+  type: QuestionType;
 }
 
 type QuestionType = "meaning" | "reading";
@@ -69,22 +69,14 @@ export const VocabularyTest = ({ chapterId, onClose }: VocabularyTestProps) => {
       }));
       setVocabularyList(formattedData);
       
-      // Generate test questions (each word appears 1-2 times)
-      const questions = formattedData.flatMap(vocab => {
-        const questions: Array<{ vocab: Vocabulary; type: QuestionType }> = [
-          { vocab, type: Math.random() < 0.5 ? "meaning" : "reading" }
-        ];
-        // 50% chance to add a second question for this word
-        if (Math.random() < 0.5) {
-          questions.push({ 
-            vocab, 
-            type: questions[0].type === "meaning" ? "reading" : "meaning"
-          });
-        }
-        return questions;
-      });
-      // Shuffle the questions
-      setTestQuestions(questions.sort(() => Math.random() - 0.5));
+      // Generate randomized test questions (each word appears exactly once)
+      const shuffledVocab = [...formattedData].sort(() => Math.random() - 0.5);
+      const questions = shuffledVocab.map(vocab => ({
+        vocab,
+        type: Math.random() < 0.5 ? "meaning" : "reading" as QuestionType
+      }));
+      
+      setTestQuestions(questions);
       setIsLoading(false);
     }
   };

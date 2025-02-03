@@ -126,10 +126,7 @@ const Chapter = () => {
   };
 
   const handleEdit = (vocabulary: Vocabulary) => {
-    setEditingVocabulary({
-      ...vocabulary,
-      writingSystem: vocabulary.writing_system
-    });
+    setEditingVocabulary(vocabulary);
     setShowForm(true);
   };
 
@@ -175,7 +172,12 @@ const Chapter = () => {
                 setShowForm(false);
                 setEditingVocabulary(null);
               }}
-              initialValues={editingVocabulary || undefined}
+              initialValues={editingVocabulary ? {
+                meaning: editingVocabulary.meaning,
+                reading: editingVocabulary.reading,
+                kanji: editingVocabulary.kanji,
+                writingSystem: editingVocabulary.writing_system
+              } : undefined}
             />
           </div>
         )}

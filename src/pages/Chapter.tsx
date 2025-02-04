@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { VocabularyTest } from "@/components/VocabularyTest";
+import { KanjiTest } from "@/components/KanjiTest";
 
 interface Vocabulary {
   id: string;
@@ -28,6 +29,7 @@ const Chapter = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [showTest, setShowTest] = useState(false);
+  const [showKanjiTest, setShowKanjiTest] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -162,6 +164,15 @@ const Chapter = () => {
     );
   }
 
+  if (showKanjiTest) {
+    return (
+      <KanjiTest 
+        chapterId={chapterId} 
+        onClose={() => setShowKanjiTest(false)} 
+      />
+    );
+  }
+
   return (
     <div className="container mx-auto p-6">
       <div className="max-w-4xl mx-auto">
@@ -173,14 +184,24 @@ const Chapter = () => {
           >
             <Plus className="mr-2 h-4 w-4" /> Add Vocabulary
           </Button>
-          {vocabularyList.length > 0 && (
-            <Button
-              onClick={() => setShowTest(true)}
-              className="bg-zen-600 hover:bg-zen-700"
-            >
-              Start Test
-            </Button>
-          )}
+          <div className="space-x-4">
+            {vocabularyList.length > 0 && (
+              <>
+                <Button
+                  onClick={() => setShowTest(true)}
+                  className="bg-zen-600 hover:bg-zen-700"
+                >
+                  Start Test
+                </Button>
+                <Button
+                  onClick={() => setShowKanjiTest(true)}
+                  className="bg-zen-600 hover:bg-zen-700"
+                >
+                  Kanji Test
+                </Button>
+              </>
+            )}
+          </div>
         </div>
 
         {showForm && (

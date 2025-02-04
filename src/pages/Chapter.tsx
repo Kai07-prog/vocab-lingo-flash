@@ -104,33 +104,6 @@ const Chapter = () => {
     setEditingVocabulary(null);
   };
 
-  const handleDelete = async (id: string) => {
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) return;
-
-    const { error } = await supabase
-      .from('vocabulary')
-      .delete()
-      .eq('id', id)
-      .eq('user_id', userData.user.id);
-
-    if (error) {
-      toast({
-        title: "Error deleting vocabulary",
-        description: error.message,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    await fetchVocabulary();
-  };
-
-  const handleEdit = (vocabulary: Vocabulary) => {
-    setEditingVocabulary(vocabulary);
-    setShowForm(true);
-  };
-
   return (
     <div className="container mx-auto p-6">
       <div className="max-w-4xl mx-auto">
@@ -168,11 +141,34 @@ const Chapter = () => {
                 key={vocabulary.id}
                 front={vocabulary.reading}
                 back={vocabulary.meaning}
-                onDelete={() => handleDelete(vocabulary.id)}
-                onEdit={() => handleEdit(vocabulary)}
                 writingSystem={vocabulary.writing_system}
                 isKanji={vocabulary.writing_system === "hiragana" && !!vocabulary.kanji}
                 kanji={vocabulary.kanji || undefined}
+                onEdit={() => {
+                  setEditingVocabulary(vocabulary);
+                  setShowForm(true);
+                }}
+                onDelete={async () => {
+                  const { error } = await supabase
+                    .from('vocabulary')
+                    .delete()
+                    .eq('id', vocabulary.id);
+
+                  if (error) {
+                    toast({
+                      title: "Error deleting vocabulary",
+                      description: error.message,
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+
+                  await fetchVocabulary();
+                  toast({
+                    title: "Vocabulary deleted",
+                    description: "The vocabulary has been removed",
+                  });
+                }}
               />
             ))}
           </div>

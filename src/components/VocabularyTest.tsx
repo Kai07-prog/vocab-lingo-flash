@@ -117,11 +117,6 @@ export const VocabularyTest = ({ chapterId, onClose }: VocabularyTestProps) => {
             }`}>
               {currentQ.vocab.reading}
             </p>
-            {currentQ.vocab.kanji && (
-              <p className="japanese-text-kanji text-3xl text-center mb-4">
-                {currentQ.vocab.kanji}
-              </p>
-            )}
           </>
         );
       case "reading":

@@ -26,7 +26,7 @@ interface TestResult {
   type: QuestionType;
 }
 
-type QuestionType = "meaning" | "reading";
+type QuestionType = "meaning" | "reading" | "kanji" | "kanjiMeaning";
 
 export const VocabularyTest = ({ chapterId, onClose }: VocabularyTestProps) => {
   const [vocabularyList, setVocabularyList] = useState<Vocabulary[]>([]);
@@ -69,23 +69,99 @@ export const VocabularyTest = ({ chapterId, onClose }: VocabularyTestProps) => {
       }));
       setVocabularyList(formattedData);
       
-      // Generate randomized test questions (each word appears exactly once)
-      const shuffledVocab = [...formattedData].sort(() => Math.random() - 0.5);
-      const questions = shuffledVocab.map(vocab => ({
-        vocab,
-        type: Math.random() < 0.5 ? "meaning" : "reading" as QuestionType
-      }));
+      // Generate questions for each vocabulary word
+      const questions: Array<{ vocab: Vocabulary; type: QuestionType }> = [];
+      formattedData.forEach(vocab => {
+        // Always add meaning and reading questions
+        questions.push({ vocab, type: "meaning" });
+        questions.push({ vocab, type: "reading" });
+        
+        // Add kanji-related questions only if the word has kanji
+        if (vocab.kanji) {
+          questions.push({ vocab, type: "kanji" }); // "What's the kanji for this reading?"
+          questions.push({ vocab, type: "kanjiMeaning" }); // "What's the meaning of this kanji?"
+        }
+      });
       
-      setTestQuestions(questions);
+      // Shuffle questions
+      const shuffledQuestions = questions.sort(() => Math.random() - 0.5);
+      setTestQuestions(shuffledQuestions);
       setIsLoading(false);
+    }
+  };
+
+  const getQuestionText = (currentQ: { vocab: Vocabulary; type: QuestionType }) => {
+    switch (currentQ.type) {
+      case "meaning":
+        return `What is the meaning of:`;
+      case "reading":
+        return `What is the ${currentQ.vocab.writingSystem} reading for:`;
+      case "kanji":
+        return "What is the kanji for this reading:";
+      case "kanjiMeaning":
+        return "What is the meaning of this kanji:";
+      default:
+        return "";
+    }
+  };
+
+  const getQuestionDisplay = (currentQ: { vocab: Vocabulary; type: QuestionType }) => {
+    switch (currentQ.type) {
+      case "meaning":
+        return (
+          <>
+            <p className={`text-center mb-4 ${
+              currentQ.vocab.writingSystem === "hiragana" 
+                ? "japanese-text-hiragana text-2xl" 
+                : "japanese-text-katakana text-2xl"
+            }`}>
+              {currentQ.vocab.reading}
+            </p>
+            {currentQ.vocab.kanji && (
+              <p className="japanese-text-kanji text-3xl text-center mb-4">
+                {currentQ.vocab.kanji}
+              </p>
+            )}
+          </>
+        );
+      case "reading":
+        return <p className="text-center mb-4 text-2xl">{currentQ.vocab.meaning}</p>;
+      case "kanji":
+        return (
+          <p className={`text-center mb-4 ${
+            currentQ.vocab.writingSystem === "hiragana" 
+              ? "japanese-text-hiragana text-2xl" 
+              : "japanese-text-katakana text-2xl"
+          }`}>
+            {currentQ.vocab.reading}
+          </p>
+        );
+      case "kanjiMeaning":
+        return (
+          <p className="japanese-text-kanji text-3xl text-center mb-4">
+            {currentQ.vocab.kanji}
+          </p>
+        );
+    }
+  };
+
+  const getCorrectAnswer = (currentQ: { vocab: Vocabulary; type: QuestionType }) => {
+    switch (currentQ.type) {
+      case "meaning":
+        return currentQ.vocab.meaning;
+      case "reading":
+        return currentQ.vocab.reading;
+      case "kanji":
+        return currentQ.vocab.kanji || "";
+      case "kanjiMeaning":
+        return currentQ.vocab.meaning;
     }
   };
 
   const checkAnswer = () => {
     const currentQ = testQuestions[currentQuestion];
-    const isCorrect = currentQ.type === "meaning"
-      ? userAnswer.toLowerCase() === currentQ.vocab.meaning.toLowerCase()
-      : userAnswer === currentQ.vocab.reading;
+    const correctAnswer = getCorrectAnswer(currentQ);
+    const isCorrect = userAnswer.toLowerCase() === correctAnswer.toLowerCase();
 
     if (isCorrect) {
       setScore(score + 1);
@@ -97,9 +173,7 @@ export const VocabularyTest = ({ chapterId, onClose }: VocabularyTestProps) => {
     } else {
       toast({
         title: "Incorrect",
-        description: `The correct answer was: ${currentQ.type === "meaning" 
-          ? currentQ.vocab.meaning 
-          : currentQ.vocab.reading}`,
+        description: `The correct answer was: ${correctAnswer}`,
         variant: "destructive",
         duration: 2000,
       });
@@ -108,7 +182,7 @@ export const VocabularyTest = ({ chapterId, onClose }: VocabularyTestProps) => {
     setTestResults([...testResults, {
       word: currentQ.vocab.reading + (currentQ.vocab.kanji ? ` (${currentQ.vocab.kanji})` : ''),
       userAnswer,
-      correctAnswer: currentQ.type === "meaning" ? currentQ.vocab.meaning : currentQ.vocab.reading,
+      correctAnswer,
       isCorrect,
       type: currentQ.type
     }]);
@@ -212,23 +286,9 @@ export const VocabularyTest = ({ chapterId, onClose }: VocabularyTestProps) => {
 
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-2">
-          {currentQ.type === "meaning" 
-            ? `What is the meaning of:`
-            : `What is the ${currentQ.vocab.writingSystem} reading for:`
-          }
+          {getQuestionText(currentQ)}
         </h3>
-        <p className={`text-center mb-4 ${
-          currentQ.type === "meaning" 
-            ? currentQ.vocab.writingSystem === "hiragana" 
-              ? "japanese-text-hiragana text-2xl" 
-              : "japanese-text-katakana text-2xl"
-            : ""
-        }`}>
-          {currentQ.type === "meaning" ? currentQ.vocab.reading : currentQ.vocab.meaning}
-        </p>
-        {currentQ.vocab.kanji && currentQ.type === "meaning" && (
-          <p className="japanese-text-kanji text-3xl text-center mb-4">{currentQ.vocab.kanji}</p>
-        )}
+        {getQuestionDisplay(currentQ)}
       </div>
 
       <div className="space-y-4">

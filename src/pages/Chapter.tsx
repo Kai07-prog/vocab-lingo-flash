@@ -18,6 +18,8 @@ interface Vocabulary {
   writing_system: "hiragana" | "katakana";
 }
 
+type TestType = "none" | "vocabulary" | "kanji";
+
 const Chapter = () => {
   const { id } = useParams();
   const chapterId = Number(id);
@@ -28,8 +30,7 @@ const Chapter = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [showTest, setShowTest] = useState(false);
-  const [showKanjiTest, setShowKanjiTest] = useState(false);
+  const [activeTest, setActiveTest] = useState<TestType>("none");
 
   useEffect(() => {
     if (!user) {
@@ -155,150 +156,143 @@ const Chapter = () => {
     return <div className="container mx-auto p-6">Loading...</div>;
   }
 
-  if (showTest) {
-    return (
-      <VocabularyTest 
-        chapterId={chapterId} 
-        onClose={() => setShowTest(false)} 
-      />
-    );
-  }
-
-  if (showKanjiTest) {
-    return (
-      <KanjiTest 
-        chapterId={chapterId} 
-        onClose={() => setShowKanjiTest(false)} 
-      />
-    );
-  }
-
-  return (
-    <div className="container mx-auto p-6">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <Button 
-            onClick={() => setShowForm(true)} 
-            className="bg-sakura-500 hover:bg-sakura-600"
-            disabled={showForm}
-          >
-            <Plus className="mr-2 h-4 w-4" /> Add Vocabulary
-          </Button>
-          <div className="space-x-4">
-            {vocabularyList.length > 0 && (
-              <>
-                <Button
-                  onClick={() => setShowTest(true)}
-                  className="bg-zen-600 hover:bg-zen-700"
+  const renderTest = () => {
+    switch (activeTest) {
+      case "vocabulary":
+        return <VocabularyTest chapterId={chapterId} onClose={() => setActiveTest("none")} />;
+      case "kanji":
+        return <KanjiTest chapterId={chapterId} onClose={() => setActiveTest("none")} />;
+      default:
+        return (
+          <div className="container mx-auto p-6">
+            <div className="max-w-4xl mx-auto">
+              <div className="flex justify-between items-center mb-6">
+                <Button 
+                  onClick={() => setShowForm(true)} 
+                  className="bg-sakura-500 hover:bg-sakura-600"
+                  disabled={showForm}
                 >
-                  Start Test
+                  <Plus className="mr-2 h-4 w-4" /> Add Vocabulary
                 </Button>
-                <Button
-                  onClick={() => setShowKanjiTest(true)}
-                  className="bg-zen-600 hover:bg-zen-700"
-                >
-                  Kanji Test
-                </Button>
-              </>
-            )}
+                <div className="space-x-4">
+                  {vocabularyList.length > 0 && (
+                    <>
+                      <Button
+                        onClick={() => setActiveTest("vocabulary")}
+                        className="bg-zen-600 hover:bg-zen-700"
+                      >
+                        Start Test
+                      </Button>
+                      <Button
+                        onClick={() => setActiveTest("kanji")}
+                        className="bg-zen-600 hover:bg-zen-700"
+                      >
+                        Kanji Test
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {showForm && (
+                <div className="mb-8">
+                  <VocabularyForm
+                    chapterId={chapterId}
+                    onAdd={handleAddVocabulary}
+                    onCancel={() => {
+                      setShowForm(false);
+                      setEditingVocabulary(null);
+                    }}
+                    initialValues={editingVocabulary ? {
+                      meaning: editingVocabulary.meaning,
+                      reading: editingVocabulary.reading,
+                      kanji: editingVocabulary.kanji || "",
+                      writingSystem: editingVocabulary.writing_system,
+                    } : undefined}
+                  />
+                </div>
+              )}
+
+              {!showForm && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {vocabularyList.map((vocabulary) => (
+                    <Flashcard
+                      key={vocabulary.id}
+                      front={vocabulary.reading}
+                      back={vocabulary.meaning}
+                      writingSystem={vocabulary.writing_system}
+                      isKanji={vocabulary.writing_system === "hiragana" && !!vocabulary.kanji}
+                      kanji={vocabulary.kanji || undefined}
+                      onEdit={() => {
+                        if (!user) {
+                          toast({
+                            title: "Authentication required",
+                            description: "Please log in to edit vocabulary",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+                        setEditingVocabulary(vocabulary);
+                        setShowForm(true);
+                      }}
+                      onDelete={async () => {
+                        try {
+                          if (!user) {
+                            toast({
+                              title: "Authentication required",
+                              description: "Please log in to delete vocabulary",
+                              variant: "destructive",
+                            });
+                            return;
+                          }
+
+                          const { error } = await supabase
+                            .from('vocabulary')
+                            .delete()
+                            .eq('id', vocabulary.id)
+                            .eq('user_id', user.id);
+
+                          if (error) {
+                            console.error('Error deleting vocabulary:', error);
+                            toast({
+                              title: "Error deleting vocabulary",
+                              description: error.message,
+                              variant: "destructive",
+                            });
+                            return;
+                          }
+
+                          await fetchVocabulary();
+                          toast({
+                            title: "Success",
+                            description: "Vocabulary deleted successfully",
+                          });
+                        } catch (error) {
+                          console.error('Error in delete operation:', error);
+                          toast({
+                            title: "Error",
+                            description: "Failed to delete vocabulary. Please try again.",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {!showForm && vocabularyList.length === 0 && (
+                <div className="text-center py-16">
+                  <p className="text-zen-500 text-lg">No vocabulary words yet. Add your first word to get started!</p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        );
+    }
+  };
 
-        {showForm && (
-          <div className="mb-8">
-            <VocabularyForm
-              chapterId={chapterId}
-              onAdd={handleAddVocabulary}
-              onCancel={() => {
-                setShowForm(false);
-                setEditingVocabulary(null);
-              }}
-              initialValues={editingVocabulary ? {
-                meaning: editingVocabulary.meaning,
-                reading: editingVocabulary.reading,
-                kanji: editingVocabulary.kanji || "",
-                writingSystem: editingVocabulary.writing_system,
-              } : undefined}
-            />
-          </div>
-        )}
-
-        {!showForm && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {vocabularyList.map((vocabulary) => (
-              <Flashcard
-                key={vocabulary.id}
-                front={vocabulary.reading}
-                back={vocabulary.meaning}
-                writingSystem={vocabulary.writing_system}
-                isKanji={vocabulary.writing_system === "hiragana" && !!vocabulary.kanji}
-                kanji={vocabulary.kanji || undefined}
-                onEdit={() => {
-                  if (!user) {
-                    toast({
-                      title: "Authentication required",
-                      description: "Please log in to edit vocabulary",
-                      variant: "destructive",
-                    });
-                    return;
-                  }
-                  setEditingVocabulary(vocabulary);
-                  setShowForm(true);
-                }}
-                onDelete={async () => {
-                  try {
-                    if (!user) {
-                      toast({
-                        title: "Authentication required",
-                        description: "Please log in to delete vocabulary",
-                        variant: "destructive",
-                      });
-                      return;
-                    }
-
-                    const { error } = await supabase
-                      .from('vocabulary')
-                      .delete()
-                      .eq('id', vocabulary.id)
-                      .eq('user_id', user.id);
-
-                    if (error) {
-                      console.error('Error deleting vocabulary:', error);
-                      toast({
-                        title: "Error deleting vocabulary",
-                        description: error.message,
-                        variant: "destructive",
-                      });
-                      return;
-                    }
-
-                    await fetchVocabulary();
-                    toast({
-                      title: "Success",
-                      description: "Vocabulary deleted successfully",
-                    });
-                  } catch (error) {
-                    console.error('Error in delete operation:', error);
-                    toast({
-                      title: "Error",
-                      description: "Failed to delete vocabulary. Please try again.",
-                      variant: "destructive",
-                    });
-                  }
-                }}
-              />
-            ))}
-          </div>
-        )}
-
-        {!showForm && vocabularyList.length === 0 && (
-          <div className="text-center py-16">
-            <p className="text-zen-500 text-lg">No vocabulary words yet. Add your first word to get started!</p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  return renderTest();
 };
 
 export default Chapter;

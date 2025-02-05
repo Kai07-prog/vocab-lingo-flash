@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { VocabularyForm } from "@/components/VocabularyForm";
 import { Button } from "@/components/ui/button";
 import { Flashcard } from "@/components/Flashcard";
-import { Plus } from "lucide-react";
+import { Plus, ArrowLeft } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -165,13 +165,23 @@ const Chapter = () => {
           <div className="container mx-auto p-6">
             <div className="max-w-4xl mx-auto">
               <div className="flex justify-between items-center mb-6">
-                <Button 
-                  onClick={() => setShowForm(true)} 
-                  className="bg-sakura-500 hover:bg-sakura-600"
-                  disabled={showForm}
-                >
-                  <Plus className="mr-2 h-4 w-4" /> Add Vocabulary
-                </Button>
+                <div className="flex items-center gap-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate('/')}
+                    className="flex items-center gap-2"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    Back to Chapters
+                  </Button>
+                  <Button 
+                    onClick={() => setShowForm(true)} 
+                    className="bg-sakura-500 hover:bg-sakura-600"
+                    disabled={showForm}
+                  >
+                    <Plus className="mr-2 h-4 w-4" /> Add Vocabulary
+                  </Button>
+                </div>
                 <div className="space-x-4">
                   {vocabularyList.length > 0 && (
                     <>

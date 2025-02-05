@@ -26,7 +26,7 @@ interface TestResult {
   type: QuestionType;
 }
 
-type QuestionType = "meaning" | "reading" | "kanji" | "kanjiMeaning";
+type QuestionType = "meaning" | "reading";
 
 export const VocabularyTest = ({ chapterId, onClose }: VocabularyTestProps) => {
   const [vocabularyList, setVocabularyList] = useState<Vocabulary[]>([]);
@@ -69,17 +69,12 @@ export const VocabularyTest = ({ chapterId, onClose }: VocabularyTestProps) => {
       }));
       setVocabularyList(formattedData);
       
-      // Generate questions for each vocabulary word
+      // Generate two questions for each vocabulary word
       const questions: Array<{ vocab: Vocabulary; type: QuestionType }> = [];
       formattedData.forEach(vocab => {
+        // Add both meaning and reading questions for each word
         questions.push({ vocab, type: "meaning" });
         questions.push({ vocab, type: "reading" });
-        
-        // Add kanji-related questions only if the word has kanji
-        if (vocab.kanji) {
-          questions.push({ vocab, type: "kanji" });
-          questions.push({ vocab, type: "kanjiMeaning" });
-        }
       });
       
       // Shuffle questions
@@ -95,10 +90,6 @@ export const VocabularyTest = ({ chapterId, onClose }: VocabularyTestProps) => {
         return `What is the meaning of:`;
       case "reading":
         return `What is the ${currentQ.vocab.writingSystem} reading for:`;
-      case "kanji":
-        return "What is the kanji for this reading:";
-      case "kanjiMeaning":
-        return "What is the meaning of this kanji:";
       default:
         return "";
     }
@@ -118,22 +109,6 @@ export const VocabularyTest = ({ chapterId, onClose }: VocabularyTestProps) => {
         );
       case "reading":
         return <p className="text-center mb-4 text-2xl">{currentQ.vocab.meaning}</p>;
-      case "kanji":
-        return (
-          <p className={`text-center mb-4 ${
-            currentQ.vocab.writingSystem === "hiragana" 
-              ? "japanese-text-hiragana text-2xl" 
-              : "japanese-text-katakana text-2xl"
-          }`}>
-            {currentQ.vocab.reading}
-          </p>
-        );
-      case "kanjiMeaning":
-        return (
-          <p className="japanese-text-kanji text-3xl text-center mb-4">
-            {currentQ.vocab.kanji}
-          </p>
-        );
     }
   };
 
@@ -143,10 +118,8 @@ export const VocabularyTest = ({ chapterId, onClose }: VocabularyTestProps) => {
         return currentQ.vocab.meaning;
       case "reading":
         return currentQ.vocab.reading;
-      case "kanji":
-        return currentQ.vocab.kanji || "";
-      case "kanjiMeaning":
-        return currentQ.vocab.meaning;
+      default:
+        return "";
     }
   };
 

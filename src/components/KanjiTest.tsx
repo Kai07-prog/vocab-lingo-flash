@@ -18,7 +18,7 @@ interface KanjiTestProps {
   onClose: () => void;
 }
 
-type QuestionType = "kanjiToReading" | "readingToKanji" | "meaningToKanji";
+type QuestionType = "hiraganaToKanji" | "meaningToKanji" | "kanjiToHiragana";
 
 interface TestResult {
   word: string;
@@ -75,10 +75,11 @@ export const KanjiTest = ({ chapterId, onClose }: KanjiTestProps) => {
       // Generate questions for each vocabulary word
       const questions: Array<{ vocab: Vocabulary; type: QuestionType }> = [];
       vocabWithKanji.forEach(vocab => {
+        // Add all three question types for each word
         questions.push(
-          { vocab, type: "kanjiToReading" },
-          { vocab, type: "readingToKanji" },
-          { vocab, type: "meaningToKanji" }
+          { vocab, type: "hiraganaToKanji" },
+          { vocab, type: "meaningToKanji" },
+          { vocab, type: "kanjiToHiragana" }
         );
       });
       
@@ -91,12 +92,12 @@ export const KanjiTest = ({ chapterId, onClose }: KanjiTestProps) => {
 
   const getQuestionText = (currentQ: { vocab: Vocabulary; type: QuestionType }) => {
     switch (currentQ.type) {
-      case "kanjiToReading":
-        return "What is the reading for this kanji?";
-      case "readingToKanji":
+      case "hiraganaToKanji":
         return "What is the kanji for this reading?";
       case "meaningToKanji":
         return "What is the kanji for this meaning?";
+      case "kanjiToHiragana":
+        return "What is the hiragana reading for this kanji?";
       default:
         return "";
     }
@@ -104,19 +105,9 @@ export const KanjiTest = ({ chapterId, onClose }: KanjiTestProps) => {
 
   const getQuestionDisplay = (currentQ: { vocab: Vocabulary; type: QuestionType }) => {
     switch (currentQ.type) {
-      case "kanjiToReading":
+      case "hiraganaToKanji":
         return (
-          <p className="japanese-text-kanji text-3xl text-center mb-4">
-            {currentQ.vocab.kanji}
-          </p>
-        );
-      case "readingToKanji":
-        return (
-          <p className={`text-center mb-4 ${
-            currentQ.vocab.writingSystem === "hiragana" 
-              ? "japanese-text-hiragana text-2xl" 
-              : "japanese-text-katakana text-2xl"
-          }`}>
+          <p className="japanese-text-hiragana text-2xl text-center mb-4">
             {currentQ.vocab.reading}
           </p>
         );
@@ -126,16 +117,24 @@ export const KanjiTest = ({ chapterId, onClose }: KanjiTestProps) => {
             {currentQ.vocab.meaning}
           </p>
         );
+      case "kanjiToHiragana":
+        return (
+          <p className="japanese-text-kanji text-3xl text-center mb-4">
+            {currentQ.vocab.kanji}
+          </p>
+        );
     }
   };
 
   const getCorrectAnswer = (currentQ: { vocab: Vocabulary; type: QuestionType }) => {
     switch (currentQ.type) {
-      case "kanjiToReading":
-        return currentQ.vocab.reading;
-      case "readingToKanji":
+      case "hiraganaToKanji":
       case "meaningToKanji":
         return currentQ.vocab.kanji || "";
+      case "kanjiToHiragana":
+        return currentQ.vocab.reading;
+      default:
+        return "";
     }
   };
 

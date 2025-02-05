@@ -72,14 +72,13 @@ export const VocabularyTest = ({ chapterId, onClose }: VocabularyTestProps) => {
       // Generate questions for each vocabulary word
       const questions: Array<{ vocab: Vocabulary; type: QuestionType }> = [];
       formattedData.forEach(vocab => {
-        // Always add meaning and reading questions
         questions.push({ vocab, type: "meaning" });
         questions.push({ vocab, type: "reading" });
         
         // Add kanji-related questions only if the word has kanji
         if (vocab.kanji) {
-          questions.push({ vocab, type: "kanji" }); // "What's the kanji for this reading?"
-          questions.push({ vocab, type: "kanjiMeaning" }); // "What's the meaning of this kanji?"
+          questions.push({ vocab, type: "kanji" });
+          questions.push({ vocab, type: "kanjiMeaning" });
         }
       });
       
@@ -109,15 +108,13 @@ export const VocabularyTest = ({ chapterId, onClose }: VocabularyTestProps) => {
     switch (currentQ.type) {
       case "meaning":
         return (
-          <>
-            <p className={`text-center mb-4 ${
-              currentQ.vocab.writingSystem === "hiragana" 
-                ? "japanese-text-hiragana text-2xl" 
-                : "japanese-text-katakana text-2xl"
-            }`}>
-              {currentQ.vocab.reading}
-            </p>
-          </>
+          <p className={`text-center mb-4 ${
+            currentQ.vocab.writingSystem === "hiragana" 
+              ? "japanese-text-hiragana text-2xl" 
+              : "japanese-text-katakana text-2xl"
+          }`}>
+            {currentQ.vocab.reading}
+          </p>
         );
       case "reading":
         return <p className="text-center mb-4 text-2xl">{currentQ.vocab.meaning}</p>;

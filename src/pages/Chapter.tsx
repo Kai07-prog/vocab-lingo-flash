@@ -38,10 +38,11 @@ const Chapter = () => {
       return;
     }
     fetchVocabulary();
-  }, [chapterId, user, navigate]);
+  }, [chapterId, user]);
 
   const fetchVocabulary = async () => {
     try {
+      console.log('Fetching vocabulary for chapter:', chapterId, 'user:', user?.id);
       setIsLoading(true);
       const { data, error } = await supabase
         .from('vocabulary')
@@ -60,6 +61,7 @@ const Chapter = () => {
       }
 
       if (data) {
+        console.log('Fetched vocabulary:', data);
         setVocabularyList(data);
       }
     } catch (error) {
@@ -152,10 +154,6 @@ const Chapter = () => {
     }
   };
 
-  if (isLoading) {
-    return <div className="container mx-auto p-6">Loading...</div>;
-  }
-
   const renderTest = () => {
     switch (activeTest) {
       case "vocabulary":
@@ -224,33 +222,16 @@ const Chapter = () => {
                       isKanji={vocabulary.writing_system === "hiragana" && !!vocabulary.kanji}
                       kanji={vocabulary.kanji || undefined}
                       onEdit={() => {
-                        if (!user) {
-                          toast({
-                            title: "Authentication required",
-                            description: "Please log in to edit vocabulary",
-                            variant: "destructive",
-                          });
-                          return;
-                        }
                         setEditingVocabulary(vocabulary);
                         setShowForm(true);
                       }}
                       onDelete={async () => {
                         try {
-                          if (!user) {
-                            toast({
-                              title: "Authentication required",
-                              description: "Please log in to delete vocabulary",
-                              variant: "destructive",
-                            });
-                            return;
-                          }
-
                           const { error } = await supabase
                             .from('vocabulary')
                             .delete()
                             .eq('id', vocabulary.id)
-                            .eq('user_id', user.id);
+                            .eq('user_id', user?.id);
 
                           if (error) {
                             console.error('Error deleting vocabulary:', error);

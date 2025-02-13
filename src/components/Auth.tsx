@@ -29,6 +29,7 @@ export const Auth = () => {
       toast({
         title: "Password reset email sent",
         description: "Check your email for the password reset link",
+        duration: 2000, // 2 seconds
       });
       
       // Reset the form state
@@ -39,8 +40,15 @@ export const Auth = () => {
         title: "Error",
         description: error instanceof Error ? error.message : "An error occurred",
         variant: "destructive",
+        duration: 2000,
       });
     }
+  };
+
+  const toggleMode = () => {
+    setIsSignUp(!isSignUp);
+    setEmail("");
+    setPassword("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,20 +59,28 @@ export const Auth = () => {
         toast({
           title: "Account created",
           description: "You have successfully created an account",
+          duration: 2000, // 2 seconds
         });
+        // Don't navigate automatically for sign up
+        // Let the user see the success message
+        setTimeout(() => {
+          setIsSignUp(false); // Switch to sign in mode
+        }, 2000);
       } else {
         await signIn(email, password);
         toast({
           title: "Welcome back!",
           description: "You have successfully signed in",
+          duration: 2000, // 2 seconds
         });
+        navigate("/");
       }
-      navigate("/");
     } catch (error) {
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "An error occurred",
         variant: "destructive",
+        duration: 2000,
       });
     }
   };
@@ -138,8 +154,9 @@ export const Auth = () => {
             </Button>
             <div className="flex flex-col space-y-2 text-center">
               <Button
+                type="button"
                 variant="link"
-                onClick={() => setIsSignUp(!isSignUp)}
+                onClick={toggleMode}
                 className="text-sakura-600"
               >
                 {isSignUp
@@ -148,6 +165,7 @@ export const Auth = () => {
               </Button>
               {!isSignUp && (
                 <Button
+                  type="button"
                   variant="link"
                   onClick={() => {
                     setIsForgotPassword(true);

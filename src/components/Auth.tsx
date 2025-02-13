@@ -7,18 +7,21 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { signIn, signUp } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/reset-password`,
@@ -29,10 +32,9 @@ export const Auth = () => {
       toast({
         title: "Password reset email sent",
         description: "Check your email for the password reset link",
-        duration: 2000, // 2 seconds
+        duration: 2000,
       });
       
-      // Reset the form state
       setIsForgotPassword(false);
       setEmail("");
     } catch (error) {
@@ -42,6 +44,8 @@ export const Auth = () => {
         variant: "destructive",
         duration: 2000,
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -53,25 +57,52 @@ export const Auth = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       if (isSignUp) {
-        await signUp(email, password);
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth`,
+          },
+        });
+        
+        if (error) throw error;
+
+        if (data?.user?.identities?.length === 0) {
+          toast({
+            title: "Account exists",
+            description: "This email is already registered. Please sign in instead.",
+            duration: 2000,
+          });
+          setTimeout(() => setIsSignUp(false), 2000);
+          return;
+        }
+
         toast({
           title: "Account created",
-          description: "You have successfully created an account",
-          duration: 2000, // 2 seconds
+          description: "Please check your email to verify your account before signing in.",
+          duration: 3000,
         });
-        // Don't navigate automatically for sign up
-        // Let the user see the success message
-        setTimeout(() => {
-          setIsSignUp(false); // Switch to sign in mode
-        }, 2000);
+        setTimeout(() => setIsSignUp(false), 3000);
       } else {
-        await signIn(email, password);
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        
+        if (signInError) {
+          if (signInError.message.includes("Email not confirmed")) {
+            throw new Error("Please verify your email before signing in.");
+          }
+          throw signInError;
+        }
+
         toast({
           title: "Welcome back!",
           description: "You have successfully signed in",
-          duration: 2000, // 2 seconds
+          duration: 2000,
         });
         navigate("/");
       }
@@ -82,6 +113,8 @@ export const Auth = () => {
         variant: "destructive",
         duration: 2000,
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -105,22 +138,26 @@ export const Auth = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={isLoading}
               />
             </div>
             <Button
               type="submit"
               className="w-full bg-sakura-500 hover:bg-sakura-600"
+              disabled={isLoading}
             >
-              Send Reset Link
+              {isLoading ? "Sending..." : "Send Reset Link"}
             </Button>
             <div className="text-center">
               <Button
+                type="button"
                 variant="link"
                 onClick={() => {
                   setIsForgotPassword(false);
                   setEmail("");
                 }}
                 className="text-sakura-600"
+                disabled={isLoading}
               >
                 Back to Sign In
               </Button>
@@ -135,6 +172,7 @@ export const Auth = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={isLoading}
               />
             </div>
             <div className="space-y-2">
@@ -144,13 +182,15 @@ export const Auth = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={isLoading}
               />
             </div>
             <Button
               type="submit"
               className="w-full bg-sakura-500 hover:bg-sakura-600"
+              disabled={isLoading}
             >
-              {isSignUp ? "Sign Up" : "Sign In"}
+              {isLoading ? "Loading..." : isSignUp ? "Sign Up" : "Sign In"}
             </Button>
             <div className="flex flex-col space-y-2 text-center">
               <Button
@@ -158,6 +198,7 @@ export const Auth = () => {
                 variant="link"
                 onClick={toggleMode}
                 className="text-sakura-600"
+                disabled={isLoading}
               >
                 {isSignUp
                   ? "Already have an account? Sign in"
@@ -172,6 +213,7 @@ export const Auth = () => {
                     setPassword("");
                   }}
                   className="text-sakura-600"
+                  disabled={isLoading}
                 >
                   Forgot password?
                 </Button>

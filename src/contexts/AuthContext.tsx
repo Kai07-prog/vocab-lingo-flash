@@ -32,6 +32,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("Auth state changed:", _event, session); // Debug log
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -41,22 +42,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    console.log("Attempting sign in for:", email); // Debug log
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    if (error) throw error;
+    if (error) {
+      console.error("Sign in error:", error); // Debug log
+      throw error;
+    }
+    console.log("Sign in successful:", data); // Debug log
   };
 
   const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
+    console.log("Attempting sign up for:", email); // Debug log
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: `${window.location.origin}`,
       },
     });
-    if (error) throw error;
+    if (error) {
+      console.error("Sign up error:", error); // Debug log
+      throw error;
+    }
+    console.log("Sign up successful:", data); // Debug log
   };
 
   const signOut = async () => {

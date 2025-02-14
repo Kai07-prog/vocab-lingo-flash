@@ -63,9 +63,6 @@ export const Auth = () => {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/auth`,
-          },
         });
         
         if (error) throw error;
@@ -82,22 +79,19 @@ export const Auth = () => {
 
         toast({
           title: "Account created",
-          description: "Please check your email to verify your account before signing in.",
-          duration: 3000,
+          description: "You have successfully created an account",
+          duration: 2000,
         });
-        setTimeout(() => setIsSignUp(false), 3000);
+        
+        // Navigate to home page after successful signup
+        navigate("/");
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         
-        if (signInError) {
-          if (signInError.message.includes("Email not confirmed")) {
-            throw new Error("Please verify your email before signing in.");
-          }
-          throw signInError;
-        }
+        if (signInError) throw signInError;
 
         toast({
           title: "Welcome back!",

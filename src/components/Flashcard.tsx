@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useCallback, memo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trash2, Edit } from "lucide-react";
@@ -13,7 +14,7 @@ interface FlashcardProps {
   kanji?: string;
 }
 
-export const Flashcard = ({ 
+export const Flashcard = memo(({ 
   front, 
   back, 
   onDelete, 
@@ -25,13 +26,22 @@ export const Flashcard = ({
   const [isFlipped, setIsFlipped] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
 
-  const handleDelete = (e: React.MouseEvent) => {
+  const handleFlip = useCallback(() => {
+    setIsFlipped(!isFlipped);
+  }, [isFlipped]);
+
+  const handleDelete = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     setIsExiting(true);
     setTimeout(() => {
       onDelete();
     }, 200);
-  };
+  }, [onDelete]);
+
+  const handleEdit = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    onEdit();
+  }, [onEdit]);
 
   return (
     <div className="relative">
@@ -39,10 +49,7 @@ export const Flashcard = ({
         <Button
           variant="ghost"
           size="icon"
-          onClick={(e) => {
-            e.stopPropagation();
-            onEdit();
-          }}
+          onClick={handleEdit}
         >
           <Edit className="h-4 w-4" />
         </Button>
@@ -57,7 +64,7 @@ export const Flashcard = ({
       
       <div
         className={`flip-card h-48 w-full ${isFlipped ? "flipped" : ""} ${isExiting ? "exit" : ""}`}
-        onClick={() => setIsFlipped(!isFlipped)}
+        onClick={handleFlip}
       >
         <div className="flip-card-inner">
           <Card className="flip-card-front flex flex-col items-center justify-center p-6">
@@ -78,4 +85,6 @@ export const Flashcard = ({
       </div>
     </div>
   );
-};
+});
+
+Flashcard.displayName = "Flashcard";

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { VocabularyForm } from "@/components/VocabularyForm";
 import { Button } from "@/components/ui/button";
@@ -35,15 +35,7 @@ const Chapter = () => {
   const [activeTest, setActiveTest] = useState<TestType>("none");
   const isMobile = useIsMobile();
 
-  useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-    fetchVocabulary();
-  }, [chapterId, user]);
-
-  const fetchVocabulary = async () => {
+  const fetchVocabulary = useCallback(async () => {
     try {
       console.log('Fetching vocabulary for chapter:', chapterId, 'user:', user?.id);
       setIsLoading(true);
@@ -77,7 +69,15 @@ const Chapter = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [chapterId, user, toast]);
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    fetchVocabulary();
+  }, [chapterId, user, navigate, fetchVocabulary]);
 
   const handleAddVocabulary = async (vocabulary: any) => {
     try {
@@ -157,12 +157,82 @@ const Chapter = () => {
     }
   };
 
+  const handleEditVocabulary = useCallback((vocabulary: Vocabulary) => {
+    setEditingVocabulary(vocabulary);
+    setShowForm(true);
+  }, []);
+
+  const handleDeleteVocabulary = useCallback(async (vocabularyId: string) => {
+    try {
+      const { error } = await supabase
+        .from('vocabulary')
+        .delete()
+        .eq('id', vocabularyId)
+        .eq('user_id', user?.id);
+
+      if (error) {
+        console.error('Error deleting vocabulary:', error);
+        toast({
+          title: "Error deleting vocabulary",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      await fetchVocabulary();
+      toast({
+        title: "Success",
+        description: "Vocabulary deleted successfully",
+      });
+    } catch (error) {
+      console.error('Error in delete operation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete vocabulary. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [user, toast, fetchVocabulary]);
+
+  const handleCancelForm = useCallback(() => {
+    setShowForm(false);
+    setEditingVocabulary(null);
+  }, []);
+
+  const handleCloseTest = useCallback(() => {
+    setActiveTest("none");
+  }, []);
+
+  const startVocabularyTest = useCallback(() => {
+    setActiveTest("vocabulary");
+  }, []);
+
+  const startKanjiTest = useCallback(() => {
+    setActiveTest("kanji");
+  }, []);
+
+  const flashcardList = useMemo(() => {
+    return vocabularyList.map((vocabulary) => (
+      <Flashcard
+        key={vocabulary.id}
+        front={vocabulary.reading}
+        back={vocabulary.meaning}
+        writingSystem={vocabulary.writing_system}
+        isKanji={vocabulary.writing_system === "hiragana" && !!vocabulary.kanji}
+        kanji={vocabulary.kanji || undefined}
+        onEdit={() => handleEditVocabulary(vocabulary)}
+        onDelete={() => handleDeleteVocabulary(vocabulary.id)}
+      />
+    ));
+  }, [vocabularyList, handleEditVocabulary, handleDeleteVocabulary]);
+
   const renderTest = () => {
     switch (activeTest) {
       case "vocabulary":
-        return <VocabularyTest chapterId={chapterId} onClose={() => setActiveTest("none")} />;
+        return <VocabularyTest chapterId={chapterId} onClose={handleCloseTest} />;
       case "kanji":
-        return <KanjiTest chapterId={chapterId} onClose={() => setActiveTest("none")} />;
+        return <KanjiTest chapterId={chapterId} onClose={handleCloseTest} />;
       default:
         return (
           <div className="w-full h-full">
@@ -190,13 +260,13 @@ const Chapter = () => {
                     {vocabularyList.length > 0 && (
                       <div className="flex flex-col md:flex-row gap-2">
                         <Button
-                          onClick={() => setActiveTest("vocabulary")}
+                          onClick={startVocabularyTest}
                           className="bg-zen-600 hover:bg-zen-700"
                         >
                           Start Test
                         </Button>
                         <Button
-                          onClick={() => setActiveTest("kanji")}
+                          onClick={startKanjiTest}
                           className="bg-zen-600 hover:bg-zen-700"
                         >
                           Kanji Test
@@ -210,10 +280,7 @@ const Chapter = () => {
                       <VocabularyForm
                         chapterId={chapterId}
                         onAdd={handleAddVocabulary}
-                        onCancel={() => {
-                          setShowForm(false);
-                          setEditingVocabulary(null);
-                        }}
+                        onCancel={handleCancelForm}
                         initialValues={editingVocabulary ? {
                           meaning: editingVocabulary.meaning,
                           reading: editingVocabulary.reading,
@@ -226,52 +293,7 @@ const Chapter = () => {
 
                   {!showForm && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                      {vocabularyList.map((vocabulary) => (
-                        <Flashcard
-                          key={vocabulary.id}
-                          front={vocabulary.reading}
-                          back={vocabulary.meaning}
-                          writingSystem={vocabulary.writing_system}
-                          isKanji={vocabulary.writing_system === "hiragana" && !!vocabulary.kanji}
-                          kanji={vocabulary.kanji || undefined}
-                          onEdit={() => {
-                            setEditingVocabulary(vocabulary);
-                            setShowForm(true);
-                          }}
-                          onDelete={async () => {
-                            try {
-                              const { error } = await supabase
-                                .from('vocabulary')
-                                .delete()
-                                .eq('id', vocabulary.id)
-                                .eq('user_id', user?.id);
-
-                              if (error) {
-                                console.error('Error deleting vocabulary:', error);
-                                toast({
-                                  title: "Error deleting vocabulary",
-                                  description: error.message,
-                                  variant: "destructive",
-                                });
-                                return;
-                              }
-
-                              await fetchVocabulary();
-                              toast({
-                                title: "Success",
-                                description: "Vocabulary deleted successfully",
-                              });
-                            } catch (error) {
-                              console.error('Error in delete operation:', error);
-                              toast({
-                                title: "Error",
-                                description: "Failed to delete vocabulary. Please try again.",
-                                variant: "destructive",
-                              });
-                            }
-                          }}
-                        />
-                      ))}
+                      {flashcardList}
                     </div>
                   )}
 

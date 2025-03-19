@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
 
 @tailwind base;
@@ -26,6 +27,29 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 346 77% 49%;
     --radius: 0.5rem;
+  }
+  
+  html, body {
+    @apply overflow-x-hidden;
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    @apply font-japanese;
+  }
+}
+
+@layer utilities {
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 }
 
@@ -110,4 +134,15 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+
+@media (max-width: 640px) {
+  .japanese-text-hiragana,
+  .japanese-text-katakana {
+    font-size: 28px;
+  }
+  
+  .japanese-text-kanji {
+    font-size: 24px;
+  }
 }

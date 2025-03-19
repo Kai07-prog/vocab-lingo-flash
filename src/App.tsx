@@ -18,7 +18,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
 
   if (!user) {
@@ -26,10 +26,12 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <UserPanel />
-      {children}
-    </>
+      <div className="flex-1">
+        {children}
+      </div>
+    </div>
   );
 };
 
@@ -65,7 +67,9 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <AppRoutes />
+          <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+            <AppRoutes />
+          </div>
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>

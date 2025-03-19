@@ -10,6 +10,7 @@ import Chapter from "./pages/Chapter";
 import NotFound from "./pages/NotFound";
 import { Auth } from "@/components/Auth";
 import { UserPanel } from "@/components/UserPanel";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const queryClient = new QueryClient();
 

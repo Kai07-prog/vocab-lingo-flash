@@ -5,9 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export const Auth = () => {
   const [email, setEmail] = useState("");
@@ -15,7 +14,6 @@ export const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn, signUp } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -83,7 +81,7 @@ export const Auth = () => {
           duration: 2000,
         });
         
-        // Navigate to home page after successful signup
+        // Use navigate instead of window.location for client-side routing
         navigate("/");
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({
